@@ -1,0 +1,28 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Eclipse 흔적 (전자정부 import 시 종종 생김)
+.project
+.classpath
+.settings/
+
+# Maven build
+target/
+**/target/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
