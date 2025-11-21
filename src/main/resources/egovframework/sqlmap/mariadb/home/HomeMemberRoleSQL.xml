@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.home.pg.service.impl.PgHomeMemberRoleMapper">
+
+    <!-- MEMBER_ROLE - 등록 -->
+    <insert id="setMemberRoleInsert" parameterType="hashMap">
+        INSERT INTO MEMBER_ROLE (
+            member_id
+          , role_id
+        ) VALUES
+        <foreach collection="roleIds" item="rid" separator=",">
+            (#{memberId}, #{rid})
+        </foreach>
+    </insert>
+
+
+    <!-- MERGE_ROLE - ROLES 전체 삭제 -->
+    <delete id="setMemberRoleAllDelete" parameterType="long">
+        DELETE FROM MEMBER_ROLE WHERE member_id = #{memberId}
+    </delete>
+
+</mapper>

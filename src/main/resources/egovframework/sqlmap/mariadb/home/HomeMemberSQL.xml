@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.home.pg.service.impl.PgHomeMemberMapper">
+
+    <!-- 회원 - 총 인원 -->
+    <select id="getMemberTotalCnt" parameterType="hashMap" resultType="egovMap">
+        SELECT COUNT(*)
+        FROM MEMBER
+        <where></where>
+    </select>
+
+    <!-- 회원 - 리스트 -->
+    <select id="getMemberList" parameterType="hashMap" resultType="egovMap">
+        SELECT
+            m.member_id,
+            m.username,
+            m.password,
+            m.name,
+            m.phone,
+            m.email,
+            m.birthdate,
+            m.status,
+            m.reg_dt,
+            m.updt_dt,
+            m.del_dt,
+            m.last_logined,
+            IFNULL(GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ','), '') AS role
+        <where></where>
+        FROM MEMBER m
+        LEFT JOIN MEMBER_ROLE mr ON mr.member_id = m.member_id
+        LEFT JOIN ROLE r ON r.role_id = mr.role_id
+
+        GROUP BY m.member_id
+        ORDER BY m.reg_dt DESC
+        LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
+    </select>
+
+    <!-- 회원 - 단일 조회 by ID -->
+    <select id="getMember" parameterType="hashMap" resultType="egovMap">
+        SELECT
+            m.member_id,
+            m.username,
+            m.password,
+            m.name,
+            m.phone,
+            m.email,
+            m.birthdate,
+            m.status,
+            m.reg_dt,
+            m.updt_dt,
+            m.del_dt,
+            m.last_logined,
+            IFNULL(GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ','), '') AS role
+
+        FROM MEMBER m
+                 LEFT JOIN MEMBER_ROLE mr ON mr.member_id = m.member_id
+                 LEFT JOIN ROLE r ON r.role_id = mr.role_id
+        WHERE m.member_id = #{memberId, jdbcType=INTEGER}
+    </select>
+
+    <!-- 회원 - 단일 조회 by USERNAME -->
+    <select id="getMemberByUsername" parameterType="hashMap" resultType="egovMap">
+        SELECT
+            m.member_id,
+            m.username,
+            m.password,
+            m.name,
+            m.phone,
+            m.email,
+            m.birthdate,
+            m.status,
+            m.reg_dt,
+            m.updt_dt,
+            m.del_dt,
+            m.last_logined,
+            IFNULL(GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ','), '') AS role
+
+        FROM MEMBER m
+                 LEFT JOIN MEMBER_ROLE mr ON mr.member_id = m.member_id
+                 LEFT JOIN ROLE r ON r.role_id = mr.role_id
+        WHERE m.username = #{username, jdbcType=VARCHAR}
+    </select>
+
+    <!-- 회원 - Merge -->
+    <insert id="setMemberMerge" parameterType="hashMap" useGeneratedKeys="true" keyProperty="memberId">
+        INSERT INTO MEMBER
+        (
+         username,
+         password,
+         name,
+         phone,
+         email,
+         birthdate,
+         reg_dt
+        )
+        VALUES
+            (
+             #{username, jdbcType=VARCHAR},
+             #{password, jdbcType=VARCHAR},
+             #{name, jdbcType=VARCHAR},
+             #{phone, jdbcType=VARCHAR},
+             #{email, jdbcType=VARCHAR},
+             #{birthdate, jdbcType=DATE},
+             NOW()
+            )
+        ON DUPLICATE KEY UPDATE
+            password = #{password, jdbcType=VARCHAR},
+            name = #{name, jdbcType=VARCHAR},
+            phone = #{phone, jdbcType=VARCHAR},
+            email = #{email, jdbcType=VARCHAR},
+            birthdate = #{birthdate, jdbcType=DATE},
+            updt_dt = NOW()
+        <if test="status != null and status != ''">
+            status = #{status, jdbcType=VARCHAR}
+        </if>
+    </insert>
+
+    <!-- 회원의 status 조회 -->
+    <select id="getMemberStatus" parameterType="hashMap" resultType="java.lang.String">
+        SELECT status
+        FROM MEMBER
+        WHERE USERNAME = #{username, jdbcType=VARCHAR}
+    </select>
+
+    <!-- 회원 - 상태 변경 (ACTIVE/INACTIVE/DELETED -->
+    <update id="setMemberStatus" parameterType="hashMap">
+        UPDATE FROM MEMBER
+        SET status = #{status, jdbcType=VARCHAR}
+        WHERE member_id = #{memberId, jdbcType=INTEGER}
+    </update>
+
+    <!-- 회원의 username(LoginID) 존재 여부 확인 --> 
+    <select id="existsByUsername" parameterType="hashMap">
+        SELECT EXISTS (
+            SELECT 1
+            FROM MEMBER
+            WHERE USERNAME = #{username, jdbcType=VARCHAR}
+        )
+    </select>
+
+
+
+</mapper>
