@@ -25,6 +25,16 @@
 		<filter-name>HTMLTagFilter</filter-name>
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
+
+	<!-- spring security -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
     
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
@@ -58,10 +68,10 @@
 		<auth-method>BASIC</auth-method>
 	</login-config>
     
-	<error-page>
-		<exception-type>java.lang.Throwable</exception-type>
-		<location>/common/error.jsp</location>
-	</error-page>
+<!--	<error-page>-->
+<!--		<exception-type>java.lang.Throwable</exception-type>-->
+<!--		<location>/common/error.jsp</location>-->
+<!--	</error-page>-->
 	<error-page>
 		<error-code>404</error-code>
 		<location>/common/error.jsp</location>
@@ -70,5 +80,17 @@
 		<error-code>500</error-code>
 		<location>/common/error.jsp</location>
 	</error-page>
+
+	<!-- 운영 profile -->
+<!--	<context-param>-->
+<!--		<param-name>spring.profiles.active</param-name>-->
+<!--		<param-value>prod</param-value>-->
+<!--	</context-param>-->
+
+	<!-- 개발 profile -->
+	<context-param>
+		<param-name>spring.profiles.active</param-name>
+		<param-value>dev</param-value>
+	</context-param>
     
 </web-app>
