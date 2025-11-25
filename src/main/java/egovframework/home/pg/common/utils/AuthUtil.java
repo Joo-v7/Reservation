@@ -86,6 +86,18 @@ public class AuthUtil {
         }
     }
 
+    /**
+     * 로그인 시도 횟수 TTL 시간 설정 (15분)
+     */
+    public void resetLoginAttemptTTL(String username) {
+        String key = LOGIN_ATTEMPT_COUNT + username;
+        long ttlSeconds = TimeUnit.MINUTES.toSeconds(15);
+        redisTemplate.expire(key, ttlSeconds, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 레디스에서 제거
+     */
     public void removeFromRedis(String username) {
         String key = LOGIN_ATTEMPT_COUNT + username;
         redisTemplate.delete(key);

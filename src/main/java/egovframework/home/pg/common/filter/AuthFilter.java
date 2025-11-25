@@ -72,6 +72,8 @@ public class AuthFilter extends OncePerRequestFilter {
                 if (count + 1 > 5) {
                     // 블랙리스트 등록 (15분)
                     authUtil.addBlacklist(username);
+                    // 해당 아이디의 로그인 시도 횟수 시간 리셋 설정 (15분)
+                    authUtil.resetLoginAttemptTTL(username);
                     throw new LockedException("로그인 시도 횟수 5회 초과, 15분 후 다시 시도하세요.");
                 }
 
