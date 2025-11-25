@@ -48,13 +48,23 @@
 	<servlet>
 		<servlet-name>action</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
 			<param-value>/WEB-INF/config/egovframework/springmvc/dispatcher-servlet.xml</param-value>
 		</init-param>
+
+		<!-- DispatcherServlet 이 매핑 없는 URL 들어오면 예외 던지도록 설정 -->
+		<!-- GlobalExceptionHandler 에서 처리 -->
+		<init-param>
+			<param-name>throwExceptionIfNoHandlerFound</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-    
+
+	<!-- dispatcher servlet 에서 .do* 패턴은 다 처리 -->
 	<servlet-mapping>
 		<servlet-name>action</servlet-name>
 		<url-pattern>*.do</url-pattern>
@@ -72,6 +82,9 @@
 <!--		<exception-type>java.lang.Throwable</exception-type>-->
 <!--		<location>/common/error.jsp</location>-->
 <!--	</error-page>-->
+	<!--  -->
+
+	<!-- dispatcherServlet이 처리하지 않는 404, 500 에러 처리 -->
 	<error-page>
 		<error-code>404</error-code>
 		<location>/common/error.jsp</location>
