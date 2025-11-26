@@ -21,14 +21,14 @@
   <div class="row py-5">
 
     <!-- sidebar -->
-    <div class="col-lg-2">
-      <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>
-    </div>
+<%--    <div class="col-lg-2">--%>
+<%--      <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>--%>
+<%--    </div>--%>
 
     <!-- Content entries-->
-    <div class="col-lg-10">
+    <div class="col-lg-12">
       <div class="row justify-content-center mb-auto">
-        <div class="col-12 col-md-10">
+        <div class="col-12 col-md-7">
 
           <!-- 제목 -->
           <h3 class="fw-semibold mb-3"><c:out value="${board.title}"/></h3>

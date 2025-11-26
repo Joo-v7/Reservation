@@ -1,4 +1,4 @@
-package egovframework.home.pg;
+package egovframework;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -24,5 +24,10 @@ public class BootStrapController {
     @GetMapping("/hello.do")
     public String hello() {
         return "example/bootstrap/helloworld";
+    }
+
+    @GetMapping("/admin.do")
+    public String adminHome() {
+        return "home/pg/admin/index";
     }
 }

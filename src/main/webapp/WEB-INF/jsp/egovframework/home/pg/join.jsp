@@ -22,7 +22,7 @@
 
     <!-- sidebar -->
     <div class="col-lg-2">
-      <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>
+<%--      <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>--%>
     </div>
 
     <!-- Content entries-->
@@ -369,38 +369,6 @@ function formatKRPhone(d) {
   return d.slice(0,3) + '-' + d.slice(3, d.length-4) + '-' + d.slice(-4);
 }
 
-
-//
-// function ajaxForm(a, b, c) {
-//   var d = !0
-//           , f = "application/x-www-form-urlencoded; charset=UTF-8";
-//   "object" === $.type(b) && b instanceof FormData && (f = d = !1);
-//   $.ajax({
-//     type: "post",
-//     url: a,
-//     cache: !1,
-//     data: b,
-//     processData: d,
-//     contentType: f,
-//     dataType: "json",
-//     success: function(e) {
-//       if ("N" == e.error)
-//         "undefined" !== $.type(e.redirect) && "" != $.trim(e.redirect) && ("reload" == $.trim(e.redirect) ? document.location.reload(!0) : document.location.href = $.trim(e.redirect));
-//       else {
-//         var g = 0;
-//         "undefined" !== $.type(e.inputArr) && $.each(e.inputArr, function(h, k) {
-//           0 == g && $("#" + h).focus();
-//           g++
-//         });
-//         "undefined" !== $.type(e.errorTitle) && "" != $.trim(e.errorTitle) && alert(e.errorMsg)
-//       }
-//       "function" === $.type(c) && c(e)
-//     },
-//     error: function(e, g, h) {
-//       alert("[" + e.status + "] " + h)
-//     }
-//   })
-// }
 
 </script>
 

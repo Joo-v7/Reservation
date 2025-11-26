@@ -57,33 +57,30 @@ public class PgHomeReservationServiceImpl implements PgHomeReservationService {
             throw new ConflictException("중복된 예약입니다.");
         }
 
-        LocalDate startDate   = LocalDate.parse(startDateStr);
-        LocalDate endDate   = LocalDate.parse(endDateStr);
-        DayOfWeek dayofWeek = convertDaysOfWeek(daysOfWeek);
-
-        LocalDate targetDate = startDate;
-
         int result = pgHomeReservationMapper.setReservationMerge(param);
 
         return result > 0;
     }
 
+    /**
+     * ============== 관리자 영역 ==============
+     */
 
-    // FullCalendar 형식으로 들어온 값을 DayOfWeek 형식으로 전환 (정기 데이터의 경우 for문 돌려서 INSERT 하기 때문에)
-    private DayOfWeek convertDaysOfWeek(String daysOfWeek) {
-        // FullCalendar: 0~6 -> 일~토
-        // DayOfWeek: 1~7 -> 일~토
-        switch (daysOfWeek) {
-            case "0": return DayOfWeek.SUNDAY;
-            case "1": return DayOfWeek.MONDAY;
-            case "2": return DayOfWeek.TUESDAY;
-            case "3": return DayOfWeek.WEDNESDAY;
-            case "4": return DayOfWeek.THURSDAY;
-            case "5": return DayOfWeek.FRIDAY;
-            case "6": return DayOfWeek.SATURDAY;
-            default:
-                throw new IllegalArgumentException("잘못된 요일 값입니다: " + daysOfWeek);
-        }
+    @Override
+    public List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws Exception {
+        return pgHomeReservationMapper.getReservationListForAdmin(param);
     }
 
+    @Override
+    public double getReservationTotalCnt(HashMap<String, Object> param) throws Exception {
+        return pgHomeReservationMapper.getReservationTotalCnt(param);
+    }
+
+    @Transactional
+    @Override
+    public boolean setUpdateReservationStatus(HashMap<String, Object> param) throws Exception {
+        int result = pgHomeReservationMapper.setUpdateReservationStatus(param);
+
+        return result > 0;
+    }
 }

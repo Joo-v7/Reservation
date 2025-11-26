@@ -9,19 +9,28 @@
 
 <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/header.jsp" %>
 
+<%--<style>--%>
+<%--  /* 이 페이지에서만 dd 하단 마진 제거 */--%>
+<%--  dd {--%>
+<%--    margin-bottom: 0 !important;--%>
+<%--  }--%>
+<%--</style>--%>
+
 <!-- Page content-->
 <div class="container-xl">
   <div class="row py-5">
 
     <!-- sidebar -->
     <div class="col-lg-2">
-      <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>
+<%--      <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp">--%>
+<%--        <jsp:param name="sideType" value="reservation"/>--%>
+<%--      </jsp:include>--%>
     </div>
 
     <!-- Content entries-->
     <div class="col-lg-10">
       <div class="row justify-content-center mb-auto">
-        <div class="col-12 col-md-10 col-lg-8">
+        <div class="col-12 col-md-10 col-lg-10">
 
           <form id="reservationForm" method="post">
             <p class="small"><span class="text-danger mb-3">*</span> 는 필수 입력 사항입니다.</p>
@@ -84,7 +93,7 @@
               <dd class="col-sm-3">
                 <input type="date" class="date form-control" id="startDate" name="startDate" required>
               </dd>
-                ~
+              ~
               <dd class="col-sm-3">
                 <input type="date" class="date form-control" id="endDate" name="endDate">
               </dd>

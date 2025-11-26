@@ -23,6 +23,10 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         return (Long) memberMap.get("memberId");
     }
 
+    public String getRealName() {
+        return (String) memberMap.get("name");
+    }
+
     // UserDetails
 
     @Override

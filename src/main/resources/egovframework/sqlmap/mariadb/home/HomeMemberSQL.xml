@@ -36,7 +36,7 @@
     </select>
 
     <!-- 회원 - 단일 조회 by ID -->
-    <select id="getMember" parameterType="hashMap" resultType="egovMap">
+    <select id="getMemberById" parameterType="Long" resultType="egovMap">
         SELECT
             m.member_id,
             m.username,
@@ -59,7 +59,7 @@
     </select>
 
     <!-- 회원 - 단일 조회 by USERNAME -->
-    <select id="getMemberByUsername" parameterType="hashMap" resultType="egovMap">
+    <select id="getMemberByUsername" parameterType="String" resultType="egovMap">
         SELECT
             m.member_id,
             m.username,
@@ -76,8 +76,8 @@
             IFNULL(GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ','), '') AS role
 
         FROM MEMBER m
-                 LEFT JOIN MEMBER_ROLE mr ON mr.member_id = m.member_id
-                 LEFT JOIN ROLE r ON r.role_id = mr.role_id
+        LEFT JOIN MEMBER_ROLE mr ON mr.member_id = m.member_id
+        LEFT JOIN ROLE r ON r.role_id = mr.role_id
         WHERE m.username = #{username, jdbcType=VARCHAR}
     </select>
 
@@ -116,7 +116,7 @@
     </insert>
 
     <!-- 회원의 status 조회 -->
-    <select id="getMemberStatus" parameterType="hashMap" resultType="java.lang.String">
+    <select id="getMemberStatusByUsername" parameterType="hashMap" resultType="java.lang.String">
         SELECT status
         FROM MEMBER
         WHERE USERNAME = #{username, jdbcType=VARCHAR}
@@ -130,13 +130,20 @@
     </update>
 
     <!-- 회원의 username(LoginID) 존재 여부 확인 --> 
-    <select id="existsByUsername" parameterType="hashMap">
+    <select id="existsByUsername" parameterType="String">
         SELECT EXISTS (
             SELECT 1
             FROM MEMBER
             WHERE USERNAME = #{username, jdbcType=VARCHAR}
         )
     </select>
+
+    <!-- 회원 최근 로그인 일시 업데이트 -->
+    <update id="setUpdateLastLoginAtByUsername" parameterType="String">
+        UPDATE MEMBER
+        SET last_logined = NOW()
+        WHERE username = #{username, jdbcType=VARCHAR}
+    </update>
 
 
 

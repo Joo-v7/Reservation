@@ -1,5 +1,6 @@
 package egovframework.home.pg.common.advice;
 
+import egovframework.home.pg.common.security.user.PrincipalDetails;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,14 @@ public class GlobalControllerAdvice {
         boolean isLogin = authentication != null &&
                 authentication.isAuthenticated() &&
                 !(authentication instanceof AnonymousAuthenticationToken);
+
+        String name = "";
+
+        if (isLogin) {
+            PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+            name = principalDetails.getRealName();
+            model.addAttribute("name", name);
+        }
 
         model.addAttribute("isLogin", isLogin);
 

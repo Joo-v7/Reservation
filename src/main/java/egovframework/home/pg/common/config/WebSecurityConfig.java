@@ -110,7 +110,10 @@ public class WebSecurityConfig {
                 ).permitAll()
 
                 .requestMatchers(mvc.pattern("/admin/**")).hasRole("ADMIN")
-                .requestMatchers(mvc.pattern("/**")).permitAll()
+                .requestMatchers(
+                        mvc.pattern("/admin/login.do"),
+                        mvc.pattern("/**")
+                ).permitAll()
 
         );
 

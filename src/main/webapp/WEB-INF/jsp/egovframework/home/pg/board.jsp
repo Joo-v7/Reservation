@@ -26,7 +26,7 @@
     </div>
 
     <!-- Content entries-->
-    <div class="col-lg-10">
+    <div class="col-lg-12">
       <div class="row justify-content-center mb-auto">
         <div class="col-12 col-md-10 col-lg-8">
 

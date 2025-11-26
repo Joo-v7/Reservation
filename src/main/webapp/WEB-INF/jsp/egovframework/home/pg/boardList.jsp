@@ -16,12 +16,14 @@
   <div class="row py-5">
 
     <!-- sidebar -->
-    <div class="col-lg-2">
-        <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>
-    </div>
+<%--      <div class="col-lg-2">--%>
+<%--          <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp">--%>
+<%--              <jsp:param name="sideType" value="board"/>--%>
+<%--          </jsp:include>--%>
+<%--      </div>--%>
 
     <!-- content entries-->
-    <div class="col-lg-10">
+    <div class="col-lg-12">
 
         <!-- 상단 툴바: 좌측 메타, 우측 검색 -->
         <div class="d-flex justify-content-between align-items-center mb-3">

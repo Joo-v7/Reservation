@@ -15,4 +15,10 @@ public interface PgHomeReservationMapper {
     boolean isDuplicatedReservation(HashMap<String, Object> param) throws Exception;
 
     EgovMap getReservationById(Long reservationId) throws Exception;
+
+    List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws Exception;
+
+    double getReservationTotalCnt(HashMap<String, Object> param) throws Exception;
+
+    int setUpdateReservationStatus(HashMap<String, Object> param) throws Exception;
 }

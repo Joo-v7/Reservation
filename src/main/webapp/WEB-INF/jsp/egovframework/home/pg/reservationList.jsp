@@ -62,6 +62,10 @@
     z-index: 1040 !important; /* bootstrap modal(1050) 보다 작게 */
   }
 
+  .fc-daygrid-event-harness {
+    cursor: pointer !important;
+  }
+
 
 </style>
 
@@ -70,11 +74,13 @@
   <div class="row py-5">
 
     <!-- sidebar -->
-    <div class="col-lg-2">
-      <%@ include file="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp" %>
-    </div>
+<%--    <div class="col-lg-2">--%>
+<%--      <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp">--%>
+<%--        <jsp:param name="sideType" value="reservation"/>--%>
+<%--      </jsp:include>--%>
+<%--    </div>--%>
 
-    <div class="col-lg-10">
+    <div class="col-lg-12">
       <div id='calendar'></div>
 
       <!-- 예약 상세 모달 -->
@@ -82,7 +88,7 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
 
-            <div class="modal-header">
+            <div class="modal-header bg-dark text-white">
               <h5 class="modal-title">예약 상세</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

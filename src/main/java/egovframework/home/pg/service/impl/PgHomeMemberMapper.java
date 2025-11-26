@@ -22,12 +22,12 @@ public interface PgHomeMemberMapper {
     /**
      * 회원 - 단일 조회 by ID
      */
-    EgovMap getMember(HashMap<String, Object> param) throws DataAccessException;
+    EgovMap getMemberById(Long memberId) throws DataAccessException;
 
     /**
      * 회원 - 단일 조회 by Username
      */
-    EgovMap getMemberByUsername(HashMap<String, Object> param) throws DataAccessException;
+    EgovMap getMemberByUsername(String username) throws DataAccessException;
 
     /**
      * 회원 - Merge
@@ -37,7 +37,7 @@ public interface PgHomeMemberMapper {
     /**
      * 회원 - 회원 상태 조회
      */
-    String getMemberStatus(HashMap<String, Object> param) throws DataAccessException;
+    String getMemberStatusByUsername(String username) throws DataAccessException;
 
     /**
      * 회원 - 상태 변경 (ACTIVE/INACTIVE/DELETED)
@@ -47,7 +47,12 @@ public interface PgHomeMemberMapper {
     /**
      * 회원 - 로그인 ID 존재여부 확인
      */
-    boolean existsByUsername(HashMap<String, Object> param) throws DataAccessException;
+    boolean existsByUsername(String username) throws DataAccessException;
+
+    /**
+     * 회원 - 최근 로그인 여부 업데이트
+     */
+    int setUpdateLastLoginAtByUsername(String username) throws DataAccessException;
 
 
 }

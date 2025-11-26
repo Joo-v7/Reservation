@@ -67,3 +67,49 @@ function ajaxForm(a, b, c) {
         }
     })
 }
+
+// id, curPage, totalPage, 시작 페이지 번호(안념겨도됨)
+function customPagination(a, b, c, d) {
+    const group = 10;                   // 한 번에 보여줄 페이지 수
+    d = group * (Math.ceil(b / group) - 1) + 1; // 시작 페이지
+    let f = d + group - 1;              // 끝 페이지
+    if (f >= c) f = c;
+
+    $("#" + a + " .pagination").html(""); // 비우기
+    let e = "";
+
+    // << 이전 그룹
+    if (b > group) {
+        e += '<li class="page-item"><a href="#" class="page-link" aria-label="Previous" data-tp="' + a + '" data-move="' + (d - group) + '" title="first">'
+            + '<span aria-hidden="true">&laquo;</span></a></li>';
+    }
+    // < 이전
+    if (b > 1) {
+        e += '<li class="page-item"><a href="#" class="page-link" data-tp="' + a + '" data-move="' + (b - 1) + '" title="prev">'
+            + '<span aria-hidden="true">&lsaquo;</span></a></li>';
+    }
+
+    // 숫자 페이지들
+    for (var g = d; g <= f; g++) {
+        if (b !== g) {
+            e += '<li class="page-item"><a href="#" class="page-link" data-tp="' + a + '" data-move="' + g + '">' + g + '</a></li>';
+        } else {
+            e += '<li class="page-item"><a href="#" class="page-link active" data-tp="' + a + '" data-move="' + g + '" class="active" title="현재 ' + g + '페이지">'
+                + g + '</a></li>';
+        }
+    }
+
+    // > 다음
+    if (b < c) {
+        e += '<li class="page-item"><a href="#" class="page-link" data-tp="' + a + '" data-move="' + (b + 1) + '" title="next">'
+            + '<span aria-hidden="true">&rsaquo;</span></a></li>';
+    }
+    // >> 다음 그룹
+    if (Math.ceil(b / group) < Math.ceil(c / group)) {
+        e += '<li class="page-item"><a href="#" class="page-link" data-tp="' + a + '" data-move="' + (d + group) + '" title="last">'
+            + '<span aria-hidden="true">&raquo;</span></a></li>';
+    }
+
+    if ($.trim(e) !== "") {
+        $("#" + a + " .pagination").html("<ul class='pagination'>" + e + "</ul>");} // bootstrap5: ul-class pagination 적용
+}

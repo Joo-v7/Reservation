@@ -23,8 +23,7 @@
          r.name AS roomName
         FROM RESERVATION rv
         JOIN ROOM r ON rv.room_id = r.room_id
-        WHERE status = 'APPROVED'
-        OR status = 'PENDING'
+        WHERE status IN ('APPROVED', 'PENDING')
     </select>
 
     <!-- 예약 리스트 조회 -->
@@ -128,5 +127,99 @@
 
 
     <!-- 예약 취소 -->
+
+
+
+
+    <!-- ======================== 관리자 ===================== -->
+
+    <!-- 예약 관리 - 리스트 -->
+    <select id="getReservationListForAdmin" parameterType="hashMap" resultType="egovMap">
+        SELECT
+            rv.reservation_id,
+            rv.room_id,
+            rv.member_id,
+            rv.type,
+            rv.name,
+            rv.agenda,
+            rv.attendee_count,
+            rv.status,
+            rv.start_date,
+            rv.end_date,
+            rv.start_at,
+            rv.end_at,
+            rv.days_of_week,
+            rv.attachment,
+            rv.reg_dt,
+            r.name AS roomName,
+            m.name AS memberName
+        FROM RESERVATION rv
+        JOIN ROOM r ON rv.room_id = r.room_id
+        LEFT JOIN MEMBER m ON rv.member_id = m.member_id
+        <where>
+            <if test='searchStatus != null and searchStatus != ""'>
+                AND rv.status = #{searchStatus, jdbcType=CHAR}
+            </if>
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND rv.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        ORDER BY rv.start_date
+        LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
+    </select>
+
+    <!-- 예약 관리 - 예약 전체 개수 조회 -->
+    <select id="getReservationTotalCnt" parameterType="hashMap" resultType="Double">
+        SELECT COUNT(*)
+        FROM RESERVATION
+        <where>
+            <if test='searchStatus != null and searchStatus != ""'>
+                AND status = #{searchStatus, jdbcType=VARCHAR}
+            </if>
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 예약 관리 - 예약 상태 변경 -->
+    <update id="setUpdateReservationStatus" parameterType="hashMap">
+        UPDATE RESERVATION rv
+        SET
+            rv.status = #{status, jdbcType=VARCHAR},
+            rv.updt_dt = NOW()
+        WHERE
+            rv.reservation_id = #{reservationId, jdbcType=BIGINT}
+          AND (
+            -- PENDING/APPROVED 가 아니면 그냥 변경
+            #{status, jdbcType=CHAR} NOT IN ('PENDING', 'APPROVED')
+
+            -- PENDING/APPROVED 로 바꾸려면, 겹치는 예약이 없어야 함
+            OR NOT EXISTS (
+                SELECT 1
+                FROM RESERVATION r2
+                WHERE r2.room_id = rv.room_id
+                  AND r2.status IN ('PENDING', 'APPROVED')
+                  AND r2.reservation_id != rv.reservation_id
+
+                  -- 날짜 구간 겹침 체크
+                  AND COALESCE(r2.end_date, r2.start_date) >= rv.start_date
+                  AND COALESCE(rv.end_date, rv.start_date) >= r2.start_date
+
+                  -- 시간 구간 겹침 체크
+                  AND NOT (
+                    rv.start_at >= r2.end_at
+                    OR r2.start_at >= rv.end_at
+                  )
+                )
+            )
+    </update>
+
+
+
+
+
+
+
 
 </mapper>
