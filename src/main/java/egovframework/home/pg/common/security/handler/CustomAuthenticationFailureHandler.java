@@ -27,7 +27,6 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-//        Map<String, Object> retMap = new HashMap<>();
 
         String username = request.getParameter("username");
         // 로그인 시도 횟수 + 1
@@ -35,6 +34,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         int count = authUtil.getLoginAttemptCount(username);
 
         String errorMsg = "로그인 실패 (" + count + "/5) \\n";
+
         if (exception instanceof UsernameNotFoundException) {
             errorMsg += exception.getMessage();
         } else if (exception instanceof DisabledException) {
@@ -47,22 +47,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
             errorMsg += "비밀번호가 일치하지 않습니다.";
         }
 
-//        retMap.put("error", "Y");
-//        retMap.put("errorTitle", "Authentication Error");
-//        retMap.put("errorMsg", errorMsg);
-//
-//        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//        response.setContentType("application/json;charset=UTF-8");
-//        objectMapper.writeValue(response.getWriter(), retMap);
-
-        // alert 직접 띄우고 뒤로가기
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        out.println("<script>");
-        out.println("alert('" + errorMsg.replace("'", "\\'") + "');");
-        out.println("history.back();");
-        out.println("</script>");
-        out.flush();
-
+        request.getSession().setAttribute("errorMsg", errorMsg);
+        response.sendRedirect(request.getContextPath() + "/login.do");
     }
 }

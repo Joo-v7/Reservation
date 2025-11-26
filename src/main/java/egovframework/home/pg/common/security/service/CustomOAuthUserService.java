@@ -37,14 +37,12 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
          */
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
-        HashMap<String, Object> param = new HashMap<String, Object>();
-        param.put("username", response.get("id")); // OAuth에서 주는 ID는 해당 회원의 고유한 값임.
+        String username = StringUtils.stripToEmpty((String)response.get("id")); // OAuth에서 주는 ID는 해당 회원의 고유한 값임.
 
         // username(OAuth2 id)를 조회해서 없으면 회원가입 처리
-        if (!pgHomeMemberService.existsByUsername(param)) {
+        if (!pgHomeMemberService.existsByUsername(username)) {
             // Naver OAuth2의 응답값 -> Member 값
             HashMap<String, Object> memberMap = new HashMap<String, Object>();
-            String username = StringUtils.stripToEmpty((String)response.get("id"));
             String password = "naver";
             String name = StringUtils.stripToEmpty((String)response.get("name"));
             String phone = StringUtils.stripToEmpty((String)response.get("mobile"));
@@ -70,7 +68,7 @@ public class CustomOAuthUserService extends DefaultOAuth2UserService {
             }
         }
 
-        EgovMap member = pgHomeMemberService.getMemberByUsername(param);
+        EgovMap member = pgHomeMemberService.getMemberByUsername(username);
 
         return new PrincipalDetails(member);
     }

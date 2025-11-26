@@ -8,6 +8,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -41,7 +42,7 @@
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <c:choose>
                     <c:when test="${isLogin}">
-                        <li class="nav-item"><a class="nav-link active" href="<c:url value='/myPage.do'/>">마이페이지</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="<c:url value='/myPage/myInfo.do'/>"><strong>${name}</strong> 님</a></li>
                         <li class="nav-item"><a class="nav-link active" href="<c:url value='/logout.do'/>">로그아웃</a></li>
                     </c:when>
                     <c:otherwise>
@@ -61,5 +62,13 @@
         </div>
     </div>
 </header>
+
+<c:if test="${not empty sessionScope.errorMsg}">
+<script>
+    alert('${sessionScope.errorMsg}');
+</script>
+    <c:remove var="errorMsg" scope="session"/>
+</c:if>
+
 
 

@@ -16,12 +16,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         String errorMsg = "로그인이 필요한 서비스입니다.";
 
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        out.println("<script>");
-        out.println("alert('" + errorMsg.replace("'", "\\'") + "');");
-        out.println("history.back();");
-        out.println("</script>");
-        out.flush();
+        request.getSession().setAttribute("errorMsg", errorMsg);
+        response.sendRedirect(request.getContextPath() + "/login.do");
     }
 }

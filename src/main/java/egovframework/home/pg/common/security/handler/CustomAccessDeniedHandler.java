@@ -16,12 +16,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         String errorMsg = "접근 권한이 없습니다.";
 
-        response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
-        out.println("<script>");
-        out.println("alert('" + errorMsg.replace("'", "\\'") + "');");
-        out.println("history.back();");
-        out.println("</script>");
-        out.flush();
+        request.getSession().setAttribute("errorMsg", errorMsg);
+        response.sendRedirect(request.getContextPath() + "/");
+
     }
 }

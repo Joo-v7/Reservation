@@ -1,6 +1,7 @@
 package egovframework.home.pg.common.security.handler;
 
 import egovframework.home.pg.common.utils.AuthUtil;
+import egovframework.home.pg.service.PgHomeMemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import java.io.IOException;
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthUtil authUtil;
+    private final PgHomeMemberService pgHomeMemberService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -27,6 +29,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         // redis 정리
         String username = authentication.getName(); // username
         authUtil.removeFromRedis(username);
+
+        pgHomeMemberService.setUpdateLastLoginAtByUsername(username);
 
         // 세션 & 쿠키 발급
         HttpSession session = request.getSession(true); // 없으면 새로 생성
@@ -37,6 +41,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         cookie.setPath("/");
         response.addCookie(cookie);
 
-        response.sendRedirect(request.getContextPath() + "/");
+        // ROLE이 ADMIN이면 ADMIN 페이지로.
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(
+                authority -> authority.getAuthority().equals("ROLE_ADMIN")
+        );
+
+        String redirectUrl = isAdmin ? (request.getContextPath() + "/admin/index.do") : (request.getContextPath() + "/");
+
+        response.sendRedirect(redirectUrl);
     }
 }

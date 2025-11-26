@@ -1,10 +1,12 @@
 package egovframework.home.pg.common.filter;
 
+import egovframework.home.pg.common.code.MemberStatus;
 import egovframework.home.pg.common.security.handler.CustomAuthenticationFailureHandler;
 import egovframework.home.pg.common.utils.AuthUtil;
 import egovframework.home.pg.service.impl.PgHomeMemberServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
@@ -33,7 +35,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 로그인 요청일 때만 세션 체크
+        // 로그인 요청일 때만 필터링
         if (!loginMatcher.matches(request)) {
             filterChain.doFilter(request, response);
             return;
@@ -41,16 +43,31 @@ public class AuthFilter extends OncePerRequestFilter {
 
         try {
             // param 체크
+            HashMap<String, Object> param = new HashMap<>();
             String username = request.getParameter("username");
+            param.put("username", username);
+
             if (username == null || username.isEmpty()) {
                 throw new AuthenticationServiceException("요청에서 아이디를 찾을 수 없습니다.");
             }
 
             // 아이디 체크
-            HashMap<String, Object> param = new HashMap<String, Object>();
-            param.put("username", username);
-            if (!pgHomeMemberService.existsByUsername(param)) {
+            if (!pgHomeMemberService.existsByUsername(username)) {
                 throw new UsernameNotFoundException("아이디가 존재하지 않습니다: " + username);
+            }
+
+            // 회원 상태 확인 (ACTIVE, INACTIVE, DELETED)
+            String status = pgHomeMemberService.getMemberStatusByUsername(username);
+            if (!StringUtils.isEmpty(status)) {
+
+                if (status.equals(MemberStatus.INACTIVE.name())) {
+                    throw new LockedException("비활성화된 계정입니다.");
+                }
+
+                if (status.equals(MemberStatus.DELETED.name())) {
+                    throw new LockedException("삭제된 계정입니다.");
+                }
+
             }
 
             // 블랙리스트 확인

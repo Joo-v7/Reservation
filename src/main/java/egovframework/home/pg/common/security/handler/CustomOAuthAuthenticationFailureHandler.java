@@ -10,13 +10,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @Slf4j
 @Component
 public class CustomOAuthAuthenticationFailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        log.info("CustomOAuthAuthenticationFailureHandler: OAuth 인증 실패");
-        response.sendRedirect(request.getContextPath() + "/index.do");
+        log.error("OAuth 인증 실패: {}", exception.getMessage());
+        String errorMsg = "소셜 로그인에 실패했습니다.";
+
+        request.getSession().setAttribute("errorMsg", errorMsg);
+        response.sendRedirect(request.getContextPath() + "/login.do");
     }
 }

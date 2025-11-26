@@ -102,46 +102,33 @@ $('#username').on('input', function () {
 
 }
 
-function submitLoginForm() {
-  let $form = $('#loginForm');
-
-  let formErr = false;
-  let moveFocus = '';
-  let errMsg = '';
-
-  $form.attr('method', 'post');
-  $form.attr('action', '/loginProcess.do');
-
-  // ---제출 유효성 체크 시작---
-  // 아이디
-  if(!formErr && !isValidUsername($('#username').val())) {
-    formErr = true;
-    moveFocus = 'username';
-    errMsg = '아이디는 6~20자의 영문 소문자, 숫자만 사용 가능합니다.';
-  }
-
-  if (formErr) {
-    alert(errMsg);
-    if (moveFocus) {
-      $('#' + moveFocus).focus();
-    }
-
-  }
-
-  // $.ajax({
-  //   url: '/loginProcess.do',
-  //   type: 'POST',
-  //   data: $form.serialize(),
-  //   dataType: 'json',
-  //   success: function(e) {
-  //     if (e.error === 'Y') {
-  //       alert(e.errorMsg);
-  //     }
-  //   }
-  //
-  // });
-
-}
+// function submitLoginForm() {
+//   let $form = $('#loginForm');
+//
+//   let formErr = false;
+//   let moveFocus = '';
+//   let errMsg = '';
+//
+//   $form.attr('method', 'post');
+//   $form.attr('action', '/loginProcess.do');
+//
+//   // ---제출 유효성 체크 시작---
+//   // 아이디
+//   if(!formErr && !isValidUsername($('#username').val())) {
+//     formErr = true;
+//     moveFocus = 'username';
+//     errMsg = '아이디는 6~20자의 영문 소문자, 숫자만 사용 가능합니다.';
+//   }
+//
+//   if (formErr) {
+//     alert(errMsg);
+//     if (moveFocus) {
+//       $('#' + moveFocus).focus();
+//     }
+//
+//   }
+//
+// }
 
 // 아이디 (영어/숫자)
 function isValidUsername(val) {

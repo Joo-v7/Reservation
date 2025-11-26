@@ -42,7 +42,16 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/");
+        // default: 사용자 페이지
+        String redirectUrl = request.getContextPath() + "/";
+
+        String referer = request.getHeader("Referer");
+        if (referer != null && referer.contains("admin")) {
+            // 관리자 쪽에서 로그아웃 누른 경우
+            redirectUrl = request.getContextPath() + "/admin/login.do";
+        }
+
+        response.sendRedirect(redirectUrl);
 
     }
 }
