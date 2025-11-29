@@ -14,7 +14,7 @@
   <div class="row py-5">
 
     <!-- sidebar -->
-    <div class="col-lg-2">
+    <div class="col-lg-2 mt-5">
       <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp">
         <jsp:param name="sideType" value="myPage"/>
         <jsp:param name="active" value="account"/>
@@ -64,7 +64,7 @@ function myInfo() {
 function dataList() {
   $('.dataList tbody').empty();
 
-  ajaxForm('<c:url value="/myPage/getMyInfo.do"/>', null, function(data) {
+  ajaxForm('<c:url value="/myPage/getMyInfoList.do"/>', null, function(data) {
     if ($.trim(data.error) === 'N') {
       let tableData = '';
       const dataMap = data.dataMap;

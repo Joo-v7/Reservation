@@ -49,12 +49,22 @@
   }
 
   /* --- fullcalendar a태그 색상뺌 --- */
-  .fc-header-toolbar a,
-  .fc-col-header-cell a,
-  .fc-button-group a,
-  .fc a {
-    color: unset !important;
-    text-decoration: none !important;
+  /*.fc-header-toolbar a,*/
+  /*.fc-col-header-cell a,*/
+  /*.fc-button-group a,*/
+  /*.fc a {*/
+  /*  color: unset !important;*/
+  /*  text-decoration: none !important;*/
+  /*}*/
+
+  /* 이벤트 링크(파란색 제거) */
+  .fc .fc-daygrid-event,
+  .fc .fc-daygrid-event a,
+  .fc .fc-daygrid-dot-event,
+  .fc .fc-timegrid-event,
+  .fc .fc-timegrid-event a {
+    color: inherit !important;        /* 부모 색(대부분 검정) */
+    text-decoration: none !important; /* 밑줄 제거 */
   }
 
   /* FullCalendar의 more 팝오버를 모달보다 뒤로 보내기 */
@@ -81,7 +91,15 @@
 <%--    </div>--%>
 
     <div class="col-lg-12">
+
       <div id='calendar'></div>
+      <div class="d-flex justify-content-end" style="margin-bottom:10px; font-size:15px;">
+        <span style="color:black; font-size:18px;">●</span> 관리자 승인대기
+        &nbsp;&nbsp;
+        <span style="color:blue; font-size:18px;">●</span> 일자
+        &nbsp;&nbsp;
+        <span style="color:red; font-size:18px;">●</span> 정기
+      </div>
 
       <!-- 예약 상세 모달 -->
       <div class="modal fade" id="reservationDetailModal" tabindex="-1" aria-hidden="true">
@@ -90,7 +108,7 @@
 
             <div class="modal-header bg-dark text-white">
               <h5 class="modal-title">예약 상세</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
@@ -224,6 +242,9 @@ document.addEventListener('DOMContentLoaded', function() {
     dayMaxEvents: true, // 달력에 최대 표시 가능한 일정 자동 설정
     nowIndicator: true, // 달력에 현재 시간을 표시
 
+    // eventDisplay: 'block', // 이벤트 스타일
+    eventDisplay: 'list-item', // 이벤트 스타일
+
     // 달력 클릭시 예약 등록 페이지로 이동
     // dateClick: function(info) {
     //   window.location.href = '/reservation.do';
@@ -255,6 +276,13 @@ document.addEventListener('DOMContentLoaded', function() {
             let events = [];
 
             $.each(res.dataMap, function(index, value) {
+              // let eventColor = (value.status === 'PENDING') ? 'red' : 'blue';
+              let eventColor = 'black';
+              if ($.trim(value.status) !== 'PENDING') {
+                eventColor = (value.type === 'R') ? 'red' : 'blue';
+              }
+
+              // 일자일때
               if ($.trim(value.type) === 'D') {
 
                 let startDate = dateFormat(new Date(value.startDate));
@@ -266,11 +294,16 @@ document.addEventListener('DOMContentLoaded', function() {
                   title: $.trim(value.name),
                   start: startDateTime,
                   end: endDateTime,
-                  extendedProps: value // 해당 데이터 보관
+                  extendedProps: value, // 해당 데이터 보관
+                  color: eventColor
                 })
-              } else {
+              } else { // 정기일때
                 let startDate = dateFormat(new Date(value.startDate));
                 let endDate = dateFormat(new Date(value.endDate));
+                let daysOfWeekArr = [];
+                if (value.daysOfWeek) {
+                  daysOfWeekArr = value.daysOfWeek.split(',');
+                }
 
                 events.push({
                   id: $.trim(value.reservationId),
@@ -279,9 +312,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   endRecur: endDate,
                   startTime: value.startAt,
                   endTime: value.endAt,
-                  daysOfWeek: value.daysOfWeek,
+                  daysOfWeek: daysOfWeekArr,
                   extendedProps: value, // 해당 데이터 보관
-                  color: 'red'
+                  color: eventColor
                 })
               }
             });
@@ -357,6 +390,7 @@ function dateFormat(date) {
   return formattedDate;
 }
 
+// 모달창
 function showModalForm(event) {
   const p = event.extendedProps;
 
@@ -394,7 +428,14 @@ function showModalForm(event) {
   $('#status').text(p.status === 'PENDING' ? '승인대기' : '승인완료');
 
   // 첨부파일 (없으면 '-')
-  $('#attachment').text(p.attachment ? p.attachment : '-');
+  if (p.attachment) {
+    const displayName = p.attachment.split("_")[1] || p.attachment;
+    const url = '${pageContext.request.contextPath}' + '/reservation/attachment.do?file=' + p.attachment;
+
+    $('#attachment').html('<a href="' + url + '">' + displayName + '</a>');
+  } else {
+    $('#attachment').text('-');
+  }
 
   // 모달 열기
   var modalEl = document.getElementById('reservationDetailModal');

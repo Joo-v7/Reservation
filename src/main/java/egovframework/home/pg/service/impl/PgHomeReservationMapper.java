@@ -2,6 +2,7 @@ package egovframework.home.pg.service.impl;
 
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 import org.egovframe.rte.psl.dataaccess.util.EgovMap;
+import org.springframework.dao.DataAccessException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,4 +22,10 @@ public interface PgHomeReservationMapper {
     double getReservationTotalCnt(HashMap<String, Object> param) throws Exception;
 
     int setUpdateReservationStatus(HashMap<String, Object> param) throws Exception;
+
+    /**
+     * 마이페이지 - 내 예약 데이터
+     */
+    List<EgovMap> getReservationListForMember(HashMap<String, Object> param) throws DataAccessException;
+
 }

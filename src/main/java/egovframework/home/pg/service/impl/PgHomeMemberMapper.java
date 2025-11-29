@@ -54,5 +54,4 @@ public interface PgHomeMemberMapper {
      */
     int setUpdateLastLoginAtByUsername(String username) throws DataAccessException;
 
-
 }

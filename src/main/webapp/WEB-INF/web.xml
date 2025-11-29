@@ -77,6 +77,12 @@
 	<login-config>
 		<auth-method>BASIC</auth-method>
 	</login-config>
+
+	<multipart-config>
+		<max-file-size>5242880</max-file-size>         <!-- 5MB -->
+		<max-request-size>20971520</max-request-size>  <!-- 20MB -->
+		<file-size-threshold>0</file-size-threshold>
+	</multipart-config>
     
 <!--	<error-page>-->
 <!--		<exception-type>java.lang.Throwable</exception-type>-->
@@ -95,15 +101,15 @@
 	</error-page>
 
 	<!-- 운영 profile -->
-<!--	<context-param>-->
-<!--		<param-name>spring.profiles.active</param-name>-->
-<!--		<param-value>prod</param-value>-->
-<!--	</context-param>-->
-
-	<!-- 개발 profile -->
 	<context-param>
 		<param-name>spring.profiles.active</param-name>
-		<param-value>dev</param-value>
+		<param-value>prod</param-value>
 	</context-param>
+
+	<!-- 개발 profile -->
+<!--	<context-param>-->
+<!--		<param-name>spring.profiles.active</param-name>-->
+<!--		<param-value>dev</param-value>-->
+<!--	</context-param>-->
     
 </web-app>

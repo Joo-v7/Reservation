@@ -32,7 +32,7 @@
       <div class="row justify-content-center mb-auto">
         <div class="col-12 col-md-10 col-lg-10">
 
-          <form id="reservationForm" method="post">
+          <form id="reservationForm" method="post" enctype="multipart/form-data">
             <p class="small"><span class="text-danger mb-3">*</span> 는 필수 입력 사항입니다.</p>
 
             <dl class="row mb-3">
@@ -93,7 +93,9 @@
               <dd class="col-sm-3">
                 <input type="date" class="date form-control" id="startDate" name="startDate" required>
               </dd>
-              ~
+              <dd class="col-auto d-flex align-items-center justify-content-center px-0">
+                ~
+              </dd>
               <dd class="col-sm-3">
                 <input type="date" class="date form-control" id="endDate" name="endDate">
               </dd>
@@ -104,32 +106,32 @@
               <dd class="col-sm-10 d-flex gap-3 pt-2">
 
                 <div class="form-check form-check-inline">
-                  <input id="mon" class="form-check-input" type="radio" name="daysOfWeek" value="1" >
+                  <input id="mon" class="form-check-input" type="checkbox" name="daysOfWeek" value="1">
                   <label class="form-check-label" for="mon">월</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="tue" class="form-check-input" type="radio" name="daysOfWeek" value="2" >
+                  <input id="tue" class="form-check-input" type="checkbox" name="daysOfWeek" value="2">
                   <label class="form-check-label" for="tue">화</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="wed" class="form-check-input" type="radio" name="daysOfWeek" value="3" >
+                  <input id="wed" class="form-check-input" type="checkbox" name="daysOfWeek" value="3">
                   <label class="form-check-label" for="wed">수</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="thu" class="form-check-input" type="radio" name="daysOfWeek" value="4" >
+                  <input id="thu" class="form-check-input" type="checkbox" name="daysOfWeek" value="4">
                   <label class="form-check-label" for="thu">목</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="fri" class="form-check-input" type="radio" name="daysOfWeek" value="5" >
+                  <input id="fri" class="form-check-input" type="checkbox" name="daysOfWeek" value="5">
                   <label class="form-check-label" for="fri">금</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="sat" class="form-check-input" type="radio" name="daysOfWeek" value="6" >
+                  <input id="sat" class="form-check-input" type="checkbox" name="daysOfWeek" value="6">
                   <label class="form-check-label" for="sat">토</label>
                 </div>
 
@@ -142,10 +144,15 @@
                 <!-- min:06 / max:22 input type이 time이면 선택은 가능하지만 제출시 유효성 검사에서 걸러줌 -->
                 <input type="time" class="form-control" id="startAt" name="startAt" min="06:00" max="22:00" required>
               </dd>
-              ~
+              <dd class="col-auto d-flex align-items-center justify-content-center px-0">
+                ~
+              </dd>
               <dd class="col-sm-3">
                 <!-- min:06 / max:22 input type이 time이면 선택은 가능하지만 제출시 유효성 검사에서 걸러줌 -->
                 <input type="time" class="form-control" id="endAt" name="endAt" min="06:00" max="22:00" required>
+              </dd>
+              <dd class="offset-sm-2 col-sm-10">
+                <small class="text-muted">* 오전 6시부터 오후 10시까지만 선택할 수 있습니다.</small>
               </dd>
             </dl>
 
@@ -156,10 +163,16 @@
               </dd>
             </dl>
 
-            <div class="d-flex justify-content-end gap-2 mt-3 mb-5">
-              <input type="submit" class="btn btn-primary" value="저장">
-              <button id="reservationList" type="button" class="btn btn-dark">취소</button>
-            </div>
+            <!-- 버튼 영역 -->
+            <dl class="row mb-5">
+              <dt class="col-sm-2"></dt>
+              <dd class="col-sm-10">
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                  <input type="submit" class="btn btn-primary" value="저장">
+                  <button id="reservationList" type="button" class="btn btn-dark">취소</button>
+                </div>
+              </dd>
+            </dl>
 
           </form>
 
@@ -285,17 +298,17 @@ function submitReservationForm() {
     }
   }
 
-  // 정기 예약일 때 요일 선택 체크
+  // 정기 예약일 때 요일 선택을 하나 이상 했는지 체크
   if (!formErr && type === 'R') {
-    if (!$('input[name="type"]:checked').val()) {
+    if ($('input[name="daysOfWeek"]:checked').length === 0) {
       formErr = true;
       moveFocus = 'mon';
-      errMsg = '정기 예약은 요일을 하나 선택해야 합니다.';
+      errMsg = '정기 예약은 요일을 하나 이상 선택해야 합니다.';
     }
   }
 
 
-  // 에러가 하나라도 잡혔으면 여기서 한 번만 alert 후 종료 (각각 alert 띄우니 사용자 편의성 매우 떨어짐)
+  // 에러가 하나라도 잡혔으면 여기서 한 번만 alert 후 종료 (각각 alert 띄우니 UX 매우 떨어짐)
   if (formErr) {
     alert(errMsg);
     if (moveFocus) {
@@ -314,7 +327,8 @@ function submitReservationForm() {
 
   // 수정/등록 결과
   // ajaxForm(submit url, data form, result)
-  ajaxForm('<c:url value="/setReservationMerge.do"/>', $form.serialize(), function (res) {
+  const formData = new FormData($('#reservationForm')[0]);
+  ajaxForm('<c:url value="/setReservationMerge.do"/>', formData, function (res) {
     // 응답 성공 시
     if (res.error === 'N') {
       alert(res.successMsg);

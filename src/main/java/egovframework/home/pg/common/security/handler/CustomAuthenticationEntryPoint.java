@@ -17,6 +17,12 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         String errorMsg = "로그인이 필요한 서비스입니다.";
 
         request.getSession().setAttribute("errorMsg", errorMsg);
-        response.sendRedirect(request.getContextPath() + "/login.do");
+
+        if(request.getRequestURI().contains("admin")) {
+            response.sendRedirect(request.getContextPath() + "/admin/login.do");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/login.do");
+        }
+
     }
 }

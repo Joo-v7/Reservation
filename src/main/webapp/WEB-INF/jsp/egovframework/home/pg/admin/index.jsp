@@ -40,19 +40,7 @@
 <body>
 <div class="d-flex" id="wrapper">
   <!-- Sidebar-->
-  <div class="border-end bg-dark" id="sidebar-wrapper">
-    <div class="sidebar-heading border-bottom bg-dark text-white text-lg-center"><strong>OnRoom</strong></div>
-    <div class="list-group list-group-flush">
-      <a class="list-group-item list-group-item-action bg-dark text-white p-3 ${pageContext.request.requestURI.contains('/admin/reservation') ? 'active bg-primary text-white' : 'text-white bg-dark'}"
-         href="<c:out value='/admin/reservationList.do'/>">예약 관리</a>
-      <a class="list-group-item list-group-item-action bg-dark text-white p-3 ${pageContext.request.requestURI.contains('/admin/room') ? 'active bg-primary text-white' : 'text-white bg-dark'}"
-         href="<c:out value='/admin/roomList.do'/>!">회의실 관리</a>
-      <a class="list-group-item list-group-item-action bg-dark text-white p-3 ${pageContext.request.requestURI.contains('/admin/member') ? 'active bg-primary text-white' : 'text-white bg-dark'}"
-         href="<c:out value='/admin/memberList.do'/>!">회원 관리</a>
-      <a class="list-group-item list-group-item-action bg-dark text-white p-3 ${pageContext.request.requestURI.contains('/admin/board') ? 'active bg-primary text-white' : 'text-white bg-dark'}"
-         href="<c:out value='/admin/boardList.do'/>!">게시판 관리</a>
-    </div>
-  </div>
+  <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/admin/common/sidebar.jsp"></jsp:include>
 
   <!-- Page content wrapper-->
   <div id="page-content-wrapper">

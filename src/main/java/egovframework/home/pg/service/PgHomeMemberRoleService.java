@@ -1,15 +1,12 @@
-package egovframework.home.pg.service.impl;
+package egovframework.home.pg.service;
 
-import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 import org.egovframe.rte.psl.dataaccess.util.EgovMap;
 import org.springframework.dao.DataAccessException;
 
 import java.util.HashMap;
 import java.util.List;
 
-@Mapper
-public interface PgHomeMemberRoleMapper {
-
+public interface PgHomeMemberRoleService {
     /**
      * MEMBER_ROLE insert
      */
@@ -24,5 +21,4 @@ public interface PgHomeMemberRoleMapper {
      * ROLE 전체 조회
      */
     List<EgovMap> getRoleList() throws DataAccessException;
-
 }

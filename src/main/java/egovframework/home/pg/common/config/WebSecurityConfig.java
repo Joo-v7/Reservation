@@ -58,7 +58,8 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/js/**"),
                 new AntPathRequestMatcher("/fonts/**"),
                 new AntPathRequestMatcher("/styles/**"),
-                new AntPathRequestMatcher("/images/**")
+                new AntPathRequestMatcher("/images/**"),
+                new AntPathRequestMatcher("/attachment/**")
         );
     }
 

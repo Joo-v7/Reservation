@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="egovframework.home.pg.service.impl.PgHomeReservationMapper">
 
-    <!-- 예약 전체 조회 -->
+    <!-- 예약 전체 조회 status IN APPROVED, PENDING -->
     <select id="getReservationList" parameterType="hashMap" resultType="egovMap">
         SELECT
          rv.reservation_id,
@@ -20,13 +20,13 @@
          rv.days_of_week,
          rv.attachment,
          rv.reg_dt,
-         r.name AS roomName
+         r.name AS roomName,
+         m.name AS memberName
         FROM RESERVATION rv
         JOIN ROOM r ON rv.room_id = r.room_id
-        WHERE status IN ('APPROVED', 'PENDING')
+        LEFT JOIN MEMBER m ON rv.member_id = m.member_id
+        WHERE rv.status IN ('APPROVED', 'PENDING')
     </select>
-
-    <!-- 예약 리스트 조회 -->
 
     <!-- 예약 조회 by reservation_id (PK) -->
     <select id="getReservationById" parameterType="Long" resultType="egovMap">
@@ -46,9 +46,11 @@
             rv.days_of_week,
             rv.attachment,
             rv.reg_dt,
-            r.name AS roomName
+            r.name AS roomName,
+            m.name AS memberName
         FROM RESERVATION rv
         JOIN ROOM r ON rv.room_id = r.room_id
+        LEFT JOIN MEMBER m ON rv.member_id = m.member_id
         WHERE rv.reservation_id = #{reservationId, jdbcType=INTEGER}
     </select>
 
@@ -104,6 +106,23 @@
         </if>
     </insert>
 
+    <!-- 예약 관리 - 예약 전체 개수 조회 -->
+    <select id="getReservationTotalCnt" parameterType="hashMap" resultType="Double">
+        SELECT COUNT(*)
+        FROM RESERVATION
+        <where>
+            <if test='memberId != null and memberId != ""'>
+                AND member_id = #{memberId, jdbcType=INTEGER}
+            </if>
+            <if test='searchStatus != null and searchStatus != ""'>
+                AND status = #{searchStatus, jdbcType=VARCHAR}
+            </if>
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+    </select>
+
     <!-- 회의 중복 조회 -->
     <select id="isDuplicatedReservation" parameterType="hashMap" resultType="boolean">
         SELECT EXISTS (
@@ -125,9 +144,45 @@
         )
     </select>
 
+    <!-- 마이페이지 - 내 예약 데이터 -->
+    <select id="getReservationListForMember" parameterType="hashMap" resultType="egovMap">
+        SELECT
+        rv.reservation_id,
+        rv.room_id,
+        rv.member_id,
+        rv.type,
+        rv.name,
+        rv.agenda,
+        rv.attendee_count,
+        rv.status,
+        rv.start_date,
+        rv.end_date,
+        rv.start_at,
+        rv.end_at,
+        rv.days_of_week,
+        rv.attachment,
+        rv.reg_dt,
+        r.name AS roomName,
+        m.name AS memberName
+        FROM RESERVATION rv
+        JOIN ROOM r ON rv.room_id = r.room_id
+        LEFT JOIN MEMBER m ON rv.member_id = m.member_id
+        <where>
+            <if test='memberId != null and memberId != ""'>
+                AND rv.member_id = #{memberId, jdbcType=INTEGER}
+            </if>
+            <if test='searchStatus != null and searchStatus != ""'>
+                AND rv.status = #{searchStatus, jdbcType=CHAR}
+            </if>
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND rv.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        ORDER BY rv.start_date
+        LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
+    </select>
 
     <!-- 예약 취소 -->
-
 
 
 
@@ -164,22 +219,8 @@
                 AND rv.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
             </if>
         </where>
-        ORDER BY rv.start_date
+        ORDER BY rv.start_date DESC, rv.start_at ASC
         LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
-    </select>
-
-    <!-- 예약 관리 - 예약 전체 개수 조회 -->
-    <select id="getReservationTotalCnt" parameterType="hashMap" resultType="Double">
-        SELECT COUNT(*)
-        FROM RESERVATION
-        <where>
-            <if test='searchStatus != null and searchStatus != ""'>
-                AND status = #{searchStatus, jdbcType=VARCHAR}
-            </if>
-            <if test='searchQuery != null and searchQuery != ""'>
-                AND name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
-            </if>
-        </where>
     </select>
 
     <!-- 예약 관리 - 예약 상태 변경 -->

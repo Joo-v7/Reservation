@@ -5,21 +5,102 @@
     <!-- 사용 가능한 회의실 전체 조회 -->
     <select id="getRoomList" parameterType="hashMap" resultType="egovMap">
         SELECT
-            room_id
-          , name
-          , capacity
-        FROM ROOM
-        WHERE use_at = 'Y'
+            r.room_id
+          , r.name
+          , r.description
+          , r.capacity
+          , r.image_url
+          , r.use_yn
+          , r.reg_dt
+          , r.updt_dt
+        FROM ROOM r
+        <where>
+            r.use_yn = 'Y'
+
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND r.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test='orderType == "name"'>ORDER BY r.name ASC</when>
+            <when test='orderType == "regDt"'>ORDER BY r.reg_dt DESC</when>
+            <otherwise>ORDER BY r.room_id ASC</otherwise>
+        </choose>
+        LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
     </select>
 
     <!-- 회의실 단일 조회 -->
-    <select id="getRoom" parameterType="hashMap" resultType="egovMap">
+    <select id="getRoomById" parameterType="Integer" resultType="egovMap">
         SELECT
-            room_id
-          , name
-          , capacity
-        FROM ROOM
+             r.room_id
+             , r.name
+             , r.description
+             , r.capacity
+             , r.image_url
+             , r.use_yn
+             , r.reg_dt
+             , r.updt_dt
+        FROM ROOM r
         WHERE room_id = #{roomId, jdbcType=INTEGER}
     </select>
+
+    <!-- 회의실 전체 개수 조회 -->
+    <select id="getRoomTotalCnt" parameterType="hashMap" resultType="Double">
+        SELECT COUNT(*)
+        FROM ROOM r
+        <where>
+            r.use_yn = 'Y'
+
+            <if test='searchQuery != null and searchQuery != ""'>
+                and r.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- === 관리자 === -->
+
+    <select id="getRoomListForAdmin" parameterType="hashMap" resultType="egovMap">
+        SELECT
+        r.room_id
+        , r.name
+        , r.description
+        , r.capacity
+        , r.image_url
+        , r.use_yn
+        , r.reg_dt
+        , r.updt_dt
+        FROM ROOM r
+        <where>
+            <if test="useYn != null and useYn != ''">
+                AND r.use_yn #{useYn, jdbcType=CHAR}
+            </if>
+        </where>
+        ORDER BY r.reg_dt DESC
+        LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
+    </select>
+
+    <!-- 회의실 - Merge -->
+    <insert id="setMergeRoom" parameterType="hashMap">
+        INSERT INTO ROOM
+        (
+         name
+         , description
+         , capacity
+         <if test="imageUrl != null and imageUrl != ''">, image_url</if>
+         , reg_dt
+        )
+        VALUES
+            (
+             #{name, jdbcType=VARCHAR}
+             , #{description, jdbcType=VARCHAR}
+             , #{capacity, jdbcType=INTEGER}
+             <if test="imageUrl != null and imageUrl != ''">
+                 , image_url = #{imageUrl, jdbcType=VARCHAR}
+             </if>
+             NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            name =
+    </insert>
 
 </mapper>

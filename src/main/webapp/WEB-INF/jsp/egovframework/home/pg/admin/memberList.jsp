@@ -15,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  <title>OnRoom 관리자 예약관리 페이지</title>
+  <title>OnRoom 관리자 회원관리 페이지</title>
   <!-- Favicon-->
   <link rel="icon" href="<c:url value='/assets/favicon.ico'/>"/>
   <!-- Core theme CSS (includes Bootstrap)-->
@@ -61,7 +61,7 @@
 
     <!-- Page content-->
     <div class="container-fluid">
-      <h1 class="mt-4">예약 관리</h1>
+      <h1 class="mt-4">회원 관리</h1>
 
       <!-- 상단 툴바: 좌측 메타, 우측 검색 -->
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -74,13 +74,13 @@
           <input type="hidden" id="movePage" name="movePage" value="<c:out value='${param.movePage}' default='1' />">
 
           <select id="searchStatus" name="searchStatus" class="form-select w-auto">
-            <option value="" <c:if test="${param.searchStatus eq ''}">selected</c:if>>예약 상태 선택</option>
+            <option value="" <c:if test="${param.searchStatus eq ''}">selected</c:if>>회원 상태 선택</option>
             <c:forEach var="status" items="${statusList}">
               <option value="${status.code}" ${param.searchStatus == status.code ? 'selected' : ''}>${status.name}</option>
             </c:forEach>
           </select>
 
-          <input id="searchQuery" name="searchQuery" type="text" class="form-control"  placeholder="회의명을 입력하세요" value="<c:out value="${param.searchQuery}" />">
+          <input id="searchQuery" name="searchQuery" type="text" class="form-control"  placeholder="회원 이름을 입력하세요" value="<c:out value="${param.searchQuery}" />">
 
           <button id="searchBtn" type="button" class="btn btn-dark flex-shrink-0">검색</button>
 
@@ -93,18 +93,16 @@
           <thead class="table-active">
           <tr>
             <th class="text-center">연번</th>
-            <th class="text-center">종류</th>
-            <th class="text-center">시작일</th>
-            <th class="text-center">종료일</th>
-            <th class="text-center">시작시간</th>
-            <th class="text-center">종료시간</th>
-            <th class="text-center">회의실</th>
-            <th class="text-center">회의명</th>
-            <th class="text-center">안건</th>
-            <th class="text-center">참석자 수</th>
-            <th class="text-center">첨부파일</th>
-            <th class="text-center">작성자</th>
+            <th class="text-center">권한</th>
+            <th class="text-center">아이디</th>
+            <th class="text-center">이름</th>
+            <th class="text-center">휴대전화</th>
+            <th class="text-center">이메일</th>
+            <th class="text-center">생년월일</th>
             <th class="text-center">등록일</th>
+            <th class="text-center">수정일</th>
+            <th class="text-center">삭제일</th>
+            <th class="text-center">최근 로그인</th>
             <th class="text-center">상태</th>
             <th class="text-center">관리</th>
           </tr>
@@ -115,7 +113,7 @@
       </div>
 
       <!-- 페이지네이션 -->
-      <div id="reservationPage" class="d-flex justify-content-center mt-5">
+      <div id="memberPage" class="d-flex justify-content-center mt-5">
         <div class="pagination"></div>
       </div>
 
@@ -132,11 +130,11 @@
 
 <script>
 //페이지 로드가 완료되면
-if (window.addEventListener) window.addEventListener('load', reservationList, false);
-else if (window.attachEvent) window.attachEvent('onload', reservationList);
-else window.onload = reservationList;
+if (window.addEventListener) window.addEventListener('load', memberList, false);
+else if (window.attachEvent) window.attachEvent('onload', memberList);
+else window.onload = memberList;
 
-function reservationList() {
+function memberList() {
   dataList();
 
   event();
@@ -152,7 +150,7 @@ function dataList() {
   $('.dataList tbody').append('<tr class="loading"><td colspan="' + constColLen + '" class="text-center"><i class="fad fa-spinner-third fa-spin fa-5x"></i></td></tr>');
 
   // form Submit [url, form, swal or toastr, validate, funcData]
-  ajaxForm('<c:url value="/admin/getReservationList.do"/>', $('#searchForm').serialize(), function(data) {
+  ajaxForm('<c:url value="/admin/getMemberList.do"/>', $('#searchForm').serialize(), function(data) {
     if ($.trim(data.error) == 'N') {
       let tableData = '';
       let trClass = '';
@@ -164,65 +162,53 @@ function dataList() {
       if (!recordCnt) recordCnt = 0;
       let startNo = totalCnt - ((page - 1) * recordCnt);
 
-      // 게시판 분류 맵
+      // 회원 상태 맵
       let statusMap = {};
       (data.dataMap.statusList || []).forEach(function(rt){
         statusMap[rt.code] = rt.name;
+      });
+
+      // 회원 권한 맵
+      let roleMap = {};
+      (data.dataMap.roleList || []).forEach(function(r) {
+        roleMap[r.roleId] = r.description;
       });
 
       $.each(data.dataMap.list, function(key, values) {
         tableData += '<tr' + trClass + '>';
         // 연번
         tableData += '<td class="text-center">' + (startNo - key) + '</td>';
-        // 종류
-        tableData += '<td class="text-center">' + (($.trim(values.type) === 'D') ? '일자' : '정기') + '</td>';
-        // 시작일
-        tableData += '<td class="text-center">' + formatDate(values.startDate) + '</td>';
-        // 종료일
-        const endBase = values.endDate ? values.endDate : values.startDate;
-        tableData += '<td class="text-center">' + (endBase ? formatDate(endBase) : '-') + '</td>';
-        // 시작시간
-        tableData += '<td class="text-center">' + (values.startAt ? values.startAt.substring(0, 5) : '') + '</td>';
-        // 종료시간
-        tableData += '<td class="text-center">' + (values.endAt ? values.endAt.substring(0, 5) : '') + '</td>';
-        // 회의실
-        tableData += '<td class="text-center">' + $.trim(values.roomName ?? '-') + '</td>';
-        // 회의명
-        tableData += '<td class="text-center">' + $.trim(values.name ?? '-') + '</td>';
-        // 안건
-        tableData += '<td class="text-center">' + $.trim(values.agenda ?? '-') + '</td>';
-        // 참석자 수
-        tableData += '<td class="text-center">' + (values.attendeeCount ?? '-') + '</td>';
-        // 첨부파일
-        let attachment = values.attachment
-        if (attachment) {
-          const displayName = attachment.split("_")[1] || attachment;
-          const url = '${pageContext.request.contextPath}' + '/reservation/attachment.do?file=' + attachment;
-          tableData += '<td class="text-center"><a href="' + url + '">' + displayName + '</a></td>';
-        } else {
-          tableData += '<td class="text-center">' + '-' + '</td>';
-        }
-        // 작성자
-        tableData += '<td class="text-center">' + $.trim(values.memberName ?? '-') + '</td>';
+        // 권한
+        // let roleArr = '';
+        // (values.role || []).forEach(function(r) {
+        //   roleArr += roleMap[r];
+        // })
+        tableData += '<td class="text-center">' + values.role + '</td>';
+        // 아이디
+        tableData += '<td class="text-center">' + (values.role === '소셜 사용자' ? '소셜 사용자' : values.username) + '</td>';
+        // 이름
+        tableData += '<td class="text-center">' + $.trim(values.name) + '</td>';
+        // 휴대전화
+        tableData += '<td class="text-center">' + values.phone + '</td>';
+        // 이메일
+        tableData += '<td class="text-center">' + values.phone + '</td>';
+        // 생년월일
+        tableData += '<td class="text-center">' + formatDate(values.birthdate) + '</td>';
         // 등록일
-        tableData += '<td class="text-center">' + formatDate(values.regDt) + '</td>';
-        // 예약상태
-        tableData += '<td class="text-center">';
-        tableData += '<select class="form-select bg-light reservation-status">';
-
-        (data.dataMap.statusList || []).forEach(function(rt) {
-          tableData += '<option value="' + rt.code + '"' +
-                  (rt.code === values.status ? ' selected' : '') +
-                  '>' + rt.name + '</option>';
-        });
-
-        tableData += '</select>';
-        tableData += '</td>';
+        tableData += '<td class="text-center">' + formDateTime(values.regDt) + '</td>';
+        // 수정일
+        tableData += '<td class="text-center">' + (values.updtDt ? formDateTime(values.updtDt) : '-') + '</td>';
+        // 삭제일
+        tableData += '<td class="text-center">' + (values.delDt ? formDateTime(values.delDt) : '-') + '</td>';
+        // 최근 로그인
+        tableData += '<td class="text-center">' + (values.lastLogined ? formDateTime(values.lastLogined) : '-') + '</td>';
+        // 상태
+        tableData += '<td class="text-center">' + statusMap[values.status] + '</td>';
 
         // 관리
         tableData += '<td class="text-center">' +
-                '<button type="button" class="saveBtn btn btn-primary" ' +
-                'data-reservation-id="' + values.reservationId + '">저장</button>' +
+                '<button type="button" class="saveBtn btn btn-dark" ' +
+                'data-member-id="' + values.memberId + '">관리</button>' +
                 '</td>';
 
         tableData += '</tr>';
@@ -238,7 +224,7 @@ function dataList() {
       }
       $('.dataList tbody').append(tableData);
       // 페이징
-      customPagination('reservationPage', data.dataMap.page, data.dataMap.pageCnt);
+      customPagination('memberPage', data.dataMap.page, data.dataMap.pageCnt);
     }
     // 로딩 제거
     $('.dataList tbody').children('tr.loading').remove('');
@@ -263,35 +249,35 @@ function event() {
 
   // 검색 입력: 한글/영어/숫자만 가능
   $('#searchQuery').on('input', function () {
-    const filtered = $(this).val().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣ0-9a-zA-Z\s]/g, '');
+    const filtered = $(this).val().replace(/[^0-9a-zA-Z\s]/g, '');
     $(this).val(filtered);
   })
 
   // 저장버튼 클릭(상태 변경)
-  $('.dataList').on('click', '.saveBtn', function () {
-    const $row = $(this).closest('tr'); // 현재 버튼이 있는 행 찾기
-    const newStatus = $row.find('.reservation-status').val(); // 선택된 상태값
-    const reservationId = $(this).attr('data-reservation-id');
+  <%--$('.dataList').on('click', '.saveBtn', function () {--%>
+  <%--  const $row = $(this).closest('tr'); // 현재 버튼이 있는 행 찾기--%>
+  <%--  const newStatus = $row.find('.reservation-status').val();  // 선택된 상태값--%>
+  <%--  const reservationId = $(this).attr('data-reservation-id');--%>
 
-    let $form = $('#searchForm');
+  <%--  let $form = $('#searchForm');--%>
 
-    // 같은 hidden이 계속 쌓이지 않게 기존 값 제거
-    $form.find('input[name="status"]').remove();
-    $form.find('input[name="reservationId"]').remove();
-    $form.find('input[name="action"]').remove();
+  <%--  // 같은 hidden이 계속 쌓이지 않게 기존 값 제거--%>
+  <%--  $form.find('input[name="status"]').remove();--%>
+  <%--  $form.find('input[name="reservationId"]').remove();--%>
+  <%--  $form.find('input[name="action"]').remove();--%>
 
-    // hidden input 추가
-    $form.append('<input type="hidden" name="status" value="' + newStatus + '">');
-    $form.append('<input type="hidden" name="reservationId" value="' + reservationId + '">');
-    $form.append('<input type="hidden" name="action" value="update">');
+  <%--  // hidden input 추가--%>
+  <%--  $form.append('<input type="hidden" name="status" value="' + newStatus + '">');--%>
+  <%--  $form.append('<input type="hidden" name="reservationId" value="' + reservationId + '">');--%>
+  <%--  $form.append('<input type="hidden" name="action" value="update">');--%>
 
-    ajaxForm('<c:out value="/admin/setUpdateReservationStatus.do" />', $form.serialize(), function(res) {
-      if (res.error === 'N') {
-        alert(res.successMsg);
-        dataList();
-      }
-    });
-  });
+  <%--  ajaxForm('<c:out value="/admin/setUpdateReservationStatus.do" />', $form.serialize(), function(res) {--%>
+  <%--    if (res.error === 'N') {--%>
+  <%--      alert(res.successMsg);--%>
+  <%--      dataList();--%>
+  <%--    }--%>
+  <%--  });--%>
+  <%--});--%>
 
 }
 
@@ -307,6 +293,19 @@ function formatDate(dataString) {
 
 function numberWithCommas(a) {
   return a.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+}
+
+// 날짜 + 시간(분:초)
+function formDateTime(dataString) {
+  const dateObj = new Date(dataString);
+
+  const year = dateObj.getFullYear();
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const hours = String(dateObj.getHours()).padStart(2, "0");
+  const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+
+  return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
 }
 
 </script>

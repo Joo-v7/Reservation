@@ -16,17 +16,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.faces.annotation.RequestMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.util.*;
 
 @Slf4j
 @Controller
@@ -104,25 +108,45 @@ public class PgHomeReservationController {
             HttpServletResponse res,
             ModelMap model,
             @RequestParam HashMap<String, Object> param,
+            @RequestParam(value = "attachment", required = false) MultipartFile attachment,
+            @RequestParam(value = "daysOfWeek", required = false) String[] daysOfWeeks,
             Authentication authentication
     ) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
 
         try {
+            // member_id
             PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
             param.put("memberId", principalDetails.getId());
 
-            String dateType = StringUtils.stripToEmpty((String) param.get("type"));
+            // attachment
+            if (attachment != null && !attachment.isEmpty()) {
+                String projectPath = req.getServletContext().getRealPath("/attachment/reservation");
+                log.info("=== 첨부파일 upload path => {}", projectPath);
 
-            boolean success = false;
+                String originalFilename = attachment.getOriginalFilename();
+                String savedName = UUID.randomUUID() + "_" + originalFilename;
 
-            if ("D".equals(dateType)) {
-                success = pgHomeReservationService.setReservationMergeOnce(param);
-            } else if ("R".equals(dateType)) {
-                success = pgHomeReservationService.setReservationMergeRegular(param);
+                File uploadDir = new File(projectPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+
+                File savedFile = new File(uploadDir, savedName);
+                attachment.transferTo(savedFile);
+                log.info("=== 첨부파일 upload check | saved file exists => {}", savedFile.exists());
+
+                param.put("attachment", savedName);
+
             }
 
-            if (success) {
+            // daysOfWeek
+            if (daysOfWeeks != null && daysOfWeeks.length > 0) {
+                String daysOfWeek = String.join(",", daysOfWeeks);
+                param.put("daysOfWeek", daysOfWeek);
+            }
+
+            if (pgHomeReservationService.setReservationMerge(param)) {
                 retMap.put("error", "N");
                 retMap.put("successTitle", "Success");
                 retMap.put("successMsg", "성공적으로 저장되었습니다.");
@@ -139,6 +163,52 @@ public class PgHomeReservationController {
 
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
 
+    }
+
+    // 첨부파일 다운로드
+    @RequestMapping("/reservation/attachment.do")
+    public void downloadAttachment(
+            HttpServletRequest req,
+            HttpServletResponse res,
+            @RequestParam("file") String fileName
+    ) throws Exception {
+
+        // webapp 내부 실제 저장 폴더
+        String path = req.getServletContext().getRealPath("/attachment/reservation");
+        log.info("=== attachment real path => {}", path);
+
+        File file = new File(path, fileName);
+
+        if (!file.exists()) {
+            String errorMsg = "첨부파일이 존재하지 않습니다.";
+
+            req.getSession().setAttribute("errorMsg", errorMsg);
+
+            String backUrl = req.getHeader("Referer");
+            if (backUrl != null) {
+                res.sendRedirect(backUrl);
+            } else {
+                res.sendRedirect(req.getContextPath() + "/");
+
+            }
+            res.sendRedirect(req.getContextPath() + "/");
+
+            return;
+        }
+
+        // 다운로드 헤더 세팅
+        String realFileName = fileName.split("_")[1];
+        String encodedName = URLEncoder.encode(realFileName, "UTF-8").replace("+", "%20");
+        String cd = "attachment; filename=\"" + encodedName + "\"; filename*=UTF-8''" + encodedName;
+
+        res.setContentType("application/octet-stream");
+        res.setHeader("Content-Disposition", cd);
+        res.setHeader("Content-Length", String.valueOf(file.length()));
+
+        try (OutputStream os = res.getOutputStream()) {
+            Files.copy(file.toPath(), os);
+            os.flush();
+        }
     }
 
 

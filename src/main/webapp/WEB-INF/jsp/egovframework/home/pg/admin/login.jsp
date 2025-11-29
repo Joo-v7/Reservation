@@ -21,7 +21,15 @@
   <!-- Core theme CSS (includes Bootstrap)-->
   <link href="<c:url value='/css/styles.css'/>" rel="stylesheet"/>
 </head>
+
 <body>
+
+<c:if test="${not empty sessionScope.errorMsg}">
+  <script>
+    alert('${sessionScope.errorMsg}');
+  </script>
+  <c:remove var="errorMsg" scope="session"/>
+</c:if>
 
 <div class="container-xl">
   <div class="row py-5">

@@ -1,11 +1,16 @@
 package egovframework.home.pg.web;
 
+import egovframework.home.pg.common.code.ReservationStatus;
 import egovframework.home.pg.common.security.user.PrincipalDetails;
 import egovframework.home.pg.service.PgHomeMemberService;
+import egovframework.home.pg.service.PgHomeReservationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.egovframe.rte.psl.dataaccess.util.EgovMap;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,10 +19,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -25,6 +33,7 @@ import java.util.HashMap;
 public class PgHomeMemberController {
 
     private final PgHomeMemberService pgHomeMemberService;
+    private final PgHomeReservationService pgHomeReservationService;
 
     /**
      * 회원 - 회원가입 페이지
@@ -100,15 +109,15 @@ public class PgHomeMemberController {
 
     // 마이페이지 - 계정 - 내 정보 페이지
     @PreAuthorize("isAuthenticated()")
-    @RequestMapping("/myPage/myInfo.do")
-    public String myInfo(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
-        return "home/pg/myInfo";
+    @RequestMapping("/myPage/myInfoList.do")
+    public String myInfoList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        return "home/pg/myInfoList";
     }
 
     // 마이페이지 - 계정 - 내 정보 데이터
     @PreAuthorize("isAuthenticated()")
-    @RequestMapping("/myPage/getMyInfo.do")
-    public ResponseEntity<?> getMyInfo(
+    @RequestMapping("/myPage/getMyInfoList.do")
+    public ResponseEntity<?> getMyInfoList(
             HttpServletRequest req,
             HttpServletResponse res,
             ModelMap model,
@@ -126,6 +135,107 @@ public class PgHomeMemberController {
         retMap.put("dataMap", memberMap);
 
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
+
+    // 마이페이지 - 예약 - 내 예약 페이지
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/myReservationList.do")
+    public String myReservationList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        List<HashMap<String, String>> statusList = new ArrayList<>();
+
+        // 예약 상태
+        for (ReservationStatus status : ReservationStatus.values()) {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("code", status.name());       // 'PENDING',  'APPROVED', 'REJECTED', ‘CANCELLED'
+            map.put("name", status.getKor());  // 승인대기, 승인완료, 반려, 취소
+            statusList.add(map);
+        }
+
+        model.put("statusList", statusList);
+
+        return "home/pg/myReservationList";
+    }
+
+    // 마이페이지 - 예약 - 내 예약 데이터
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/getMyReservationList.do")
+    public ResponseEntity<?> getMyReservationList(
+            HttpServletRequest req,
+            HttpServletResponse res,
+            ModelMap model,
+            @RequestParam HashMap<String, Object> param,
+            Authentication authentication
+            ) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
+        HashMap<String, Object> listMap = new HashMap<>();
+
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+        Long memberId = principalDetails.getId();
+        param.put("memberId", memberId);
+
+        try {
+            // 페이지 번호
+            Object movePageObject = param.get("movePage");
+            int movePage = ObjectUtils.isEmpty(movePageObject) ? 1 : NumberUtils.toInt(movePageObject.toString());
+            param.put("movePage", movePage);
+
+            // 한페이지 레코드 개수
+            double recordCnt = NumberUtils.toDouble((String) param.get("recordCnt"),10);
+            if (StringUtils.isNotEmpty((String) param.get("recordCnt"))) recordCnt = NumberUtils.toDouble((String) param.get("recordCnt"));
+            param.put("recordCnt", (int)recordCnt);
+
+            // limit 시작 개수 (Mariadb, mySql)
+            param.put("limitStart", ((movePage - 1) * (int)recordCnt));
+
+            // 전체 개수
+            double totalCnt = pgHomeReservationService.getReservationTotalCnt(param);
+
+            // 전체 페이지수
+            double pageCnt = Math.ceil(totalCnt / recordCnt);
+            int totalPage = (int)(pageCnt > 0 ? pageCnt : 1);
+
+            // 페이지 유효성 체크
+            if (movePage > totalPage) {
+                movePage = 1;
+                param.put("movePage", movePage);
+                param.put("limitStart", (movePage - 1) * (int)recordCnt);
+            }
+
+            List<HashMap<String, String>> statusList = new ArrayList<>();
+
+            // 예약 상태
+            for (ReservationStatus status : ReservationStatus.values()) {
+                HashMap<String, String> map = new HashMap<>();
+                map.put("code", status.name());       // 'PENDING',  'APPROVED', 'REJECTED', ‘CANCELLED'
+                map.put("name", status.getKor());  // 승인대기, 승인완료, 반려, 취소
+                statusList.add(map);
+            }
+
+            // 예약 리스트
+            List<EgovMap> reservationList = pgHomeReservationService.getReservationListForMember(param);
+
+            listMap.put("list", reservationList);
+            listMap.put("statusList", statusList);
+            listMap.put("page", movePage);
+            listMap.put("pageCnt", pageCnt);
+            listMap.put("totalCnt", totalCnt);
+
+            retMap.put("error", "N");
+            retMap.put("dataMap", listMap);
+
+        } catch (DataAccessException | MultipartException | NullPointerException | IllegalArgumentException e) {
+            log.error("== ADMIN == PgHomeReservationAdminController:getReservationList.do error={}", e.getMessage());
+            throw e;
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
+
+
+    // 마이페이지 - 게시판 - 내 게시글 페이지
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/myBoardList.do")
+    public String myBoardList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        return "home/pg/myBoardList";
     }
 
 

@@ -24,6 +24,6 @@ public interface PgHomeMemberService {
 
     boolean existsByUsername(String username) throws DataAccessException;
 
-    boolean setUpdateLastLoginAtByUsername(String username) throws DataAccessException;
+    void setUpdateLastLoginAtByUsername(String username) throws DataAccessException;
 }
 

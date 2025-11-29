@@ -65,7 +65,7 @@
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseAccount">
-            계정
+            회원정보
           </button>
         </h2>
 
@@ -77,7 +77,7 @@
           <div class="accordion-body p-0">
             <div class="list-group list-group-flush">
 
-              <a href="<c:url value='/myPage/myInfo.do'/>"
+              <a href="<c:url value='/myPage/myInfoList.do'/>"
                  class="list-group-item list-group-item-action">
                 내 정보
               </a>
@@ -117,7 +117,7 @@
           <div class="accordion-body p-0">
             <div class="list-group list-group-flush">
 
-              <a href="#"
+              <a href="<c:url value="/myPage/myReservationList.do"/>"
                  class="list-group-item list-group-item-action">
                 내 예약
               </a>
@@ -135,7 +135,7 @@
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseBoard">
-            게시판
+            나의 게시글
           </button>
         </h2>
 
@@ -147,7 +147,7 @@
           <div class="accordion-body p-0">
             <div class="list-group list-group-flush">
 
-              <a href="#"
+              <a href="<c:url value="/myPage/myBoardList.do"/> "
                  class="list-group-item list-group-item-action">
                 내 게시글
               </a>

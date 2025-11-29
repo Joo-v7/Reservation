@@ -6,6 +6,7 @@ import egovframework.home.pg.service.PgHomeRoomService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.egovframe.rte.psl.dataaccess.util.EgovMap;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,7 @@ public class PgHomeReservationServiceImpl implements PgHomeReservationService {
 
     @Transactional
     @Override
-    public boolean setReservationMergeOnce(HashMap<String, Object> param) throws Exception {
+    public boolean setReservationMerge(HashMap<String, Object> param) throws Exception {
         if(pgHomeReservationMapper.isDuplicatedReservation(param)) {
             throw new ConflictException("중복된 예약입니다.");
         }
@@ -44,22 +45,14 @@ public class PgHomeReservationServiceImpl implements PgHomeReservationService {
         return result > 0;
     }
 
-    @Transactional
     @Override
-    public boolean setReservationMergeRegular(HashMap<String, Object> param) throws Exception {
-        String startDateStr = StringUtils.stripToEmpty((String) param.get("startDate"));
-        String endDateStr = StringUtils.stripToEmpty((String) param.get("endDate"));
-        String daysOfWeek = StringUtils.stripToEmpty((String) param.get("daysOfWeek"));
+    public double getReservationTotalCnt(HashMap<String, Object> param) throws Exception {
+        return pgHomeReservationMapper.getReservationTotalCnt(param);
+    }
 
-        // TODO 유효성 검사 + 참석인원이 회의실 용량 이하 인지확인
-
-        if(pgHomeReservationMapper.isDuplicatedReservation(param)) {
-            throw new ConflictException("중복된 예약입니다.");
-        }
-
-        int result = pgHomeReservationMapper.setReservationMerge(param);
-
-        return result > 0;
+    @Override
+    public List<EgovMap> getReservationListForMember(HashMap<String, Object> param) throws DataAccessException {
+        return pgHomeReservationMapper.getReservationListForMember(param);
     }
 
     /**
@@ -69,11 +62,6 @@ public class PgHomeReservationServiceImpl implements PgHomeReservationService {
     @Override
     public List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws Exception {
         return pgHomeReservationMapper.getReservationListForAdmin(param);
-    }
-
-    @Override
-    public double getReservationTotalCnt(HashMap<String, Object> param) throws Exception {
-        return pgHomeReservationMapper.getReservationTotalCnt(param);
     }
 
     @Transactional

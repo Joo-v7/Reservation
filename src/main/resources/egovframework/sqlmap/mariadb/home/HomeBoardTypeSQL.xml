@@ -7,7 +7,7 @@
         SELECT
             board_type_id,
             name,
-            use_at,
+            use_yn,
             reg_dt,
             updt_dt
         FROM

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,24 +33,24 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
 
     @Override
     public List<EgovMap> getMemberList(HashMap<String, Object> param) throws DataAccessException {
-        return pgHomeMemberMapper.getMemberList(param);
 
-//        List<EgovMap> list = pgHomeMemberMapper.getMemberList(param);
-//
-//        for (EgovMap member : list) {
-//            try {
-//                if (member.get("phone") != null) {
-//                    member.put("phone", AES256Util.decrypt((String) member.get("phone")));
-//                }
-//                if (member.get("email") != null) {
-//                    member.put("email", AES256Util.decrypt((String) member.get("email")));
-//                }
-//            } catch (Exception e) {
-//                throw new RuntimeException("복호화 중 오류 발생", e);
-//            }
-//        }
-//
-//        return list;
+        List<EgovMap> list = pgHomeMemberMapper.getMemberList(param);
+
+        // 전화번호/이메일 복호화
+        for (EgovMap member : list) {
+            try {
+                if (member.get("phone") != null) {
+                    member.put("phone", AES256Util.decrypt((String) member.get("phone")));
+                }
+                if (member.get("email") != null) {
+                    member.put("email", AES256Util.decrypt((String) member.get("email")));
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("복호화 중 오류 발생", e);
+            }
+        }
+
+        return list;
     }
 
     @Override
@@ -146,8 +147,9 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
 
     @Transactional
     @Override
-    public boolean setUpdateLastLoginAtByUsername(String username) throws DataAccessException {
-        int result = pgHomeMemberMapper.setUpdateLastLoginAtByUsername(username);
-        return result > 0;
+    public void setUpdateLastLoginAtByUsername(String username) throws DataAccessException {
+        pgHomeMemberMapper.setUpdateLastLoginAtByUsername(username);
     }
+
+
 }

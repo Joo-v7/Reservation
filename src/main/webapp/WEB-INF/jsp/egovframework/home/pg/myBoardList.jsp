@@ -15,15 +15,16 @@
 <div class="container">
   <div class="row py-5">
 
-    <!-- sidebar -->
-<%--      <div class="col-lg-2">--%>
-<%--          <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp">--%>
-<%--              <jsp:param name="sideType" value="board"/>--%>
-<%--          </jsp:include>--%>
-<%--      </div>--%>
+      <!-- sidebar -->
+      <div class="col-lg-2 mt-5">
+          <jsp:include page="/WEB-INF/jsp/egovframework/home/pg/common/sidebar.jsp">
+              <jsp:param name="sideType" value="myPage"/>
+              <jsp:param name="active" value="reservation"/>
+          </jsp:include>
+      </div>
 
     <!-- content entries-->
-    <div class="col-lg-12">
+    <div class="col-lg-10">
 
         <!-- 상단 툴바: 좌측 메타, 우측 검색 -->
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -42,7 +43,7 @@
               </c:forEach>
             </select>
 
-            <input id="searchQuery" name="searchQuery" type="text" class="form-control"  placeholder="게시글 제목을 입력하세요" value="<c:out value="${param.searchQuery}" />">
+            <input id="searchQuery" name="searchQuery" type="text" class="form-control"  placeholder="검색어를 입력하세요" value="<c:out value="${param.searchQuery}" />">
 
             <button id="searchBtn" type="button" class="btn btn-dark flex-shrink-0">검색</button>
 
@@ -133,7 +134,7 @@ function dataList() {
         tableData += '<td class="text-center">' + $.trim(boardTypeMap[values.boardTypeId] ?? '') + '</td>';
         // 제목
         tableData += '<td class="text-center" style="text-align:left;">'
-            + '<a href="#" class="boardView text-dark" data-id="' + $.trim(values.boardId) + '">'
+            + '<a href="#" class="boardView" data-id="' + $.trim(values.boardId) + '">'
             + $.trim(values.title ?? '') + '</a></td>';
         // 작성자
         tableData += '<td class="text-center">' + $.trim(values.name ?? '-') + '</td>';

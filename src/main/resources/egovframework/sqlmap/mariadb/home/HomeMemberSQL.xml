@@ -3,10 +3,17 @@
 <mapper namespace="egovframework.home.pg.service.impl.PgHomeMemberMapper">
 
     <!-- 회원 - 총 인원 -->
-    <select id="getMemberTotalCnt" parameterType="hashMap" resultType="egovMap">
+    <select id="getMemberTotalCnt" parameterType="hashMap" resultType="Double">
         SELECT COUNT(*)
-        FROM MEMBER
-        <where></where>
+        FROM MEMBER m
+        <where>
+            <if test='searchStatus != null and searchStatus != ""'>
+                AND m.status = #{searchStatus, jdbcType=VARCHAR}
+            </if>
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND m.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
     </select>
 
     <!-- 회원 - 리스트 -->
@@ -24,12 +31,18 @@
             m.updt_dt,
             m.del_dt,
             m.last_logined,
-            IFNULL(GROUP_CONCAT(DISTINCT r.name ORDER BY r.name SEPARATOR ','), '') AS role
-        <where></where>
+            IFNULL(GROUP_CONCAT(DISTINCT r.description ORDER BY r.description SEPARATOR ','), '') AS role
         FROM MEMBER m
         LEFT JOIN MEMBER_ROLE mr ON mr.member_id = m.member_id
         LEFT JOIN ROLE r ON r.role_id = mr.role_id
-
+        <where>
+            <if test='searchStatus != null and searchStatus != ""'>
+                AND m.status = #{searchStatus, jdbcType=VARCHAR}
+            </if>
+            <if test='searchQuery != null and searchQuery != ""'>
+                AND m.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
         GROUP BY m.member_id
         ORDER BY m.reg_dt DESC
         LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}

@@ -42,7 +42,7 @@
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <c:choose>
                     <c:when test="${isLogin}">
-                        <li class="nav-item"><a class="nav-link active" href="<c:url value='/myPage/myInfo.do'/>"><strong>${name}</strong> 님</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="<c:url value='/myPage/myInfoList.do'/>"><strong>${name}</strong> 님</a></li>
                         <li class="nav-item"><a class="nav-link active" href="<c:url value='/logout.do'/>">로그아웃</a></li>
                     </c:when>
                     <c:otherwise>
@@ -58,7 +58,7 @@
     <div class="container">
         <div class="text-center my-4">
             <h1 class="fw-bolder">OnRoom</h1>
-            <p class="lead mb-0">예약 웹 사이트</p>
+            <p class="lead mb-0">회의실 예약 웹 사이트</p>
         </div>
     </div>
 </header>
