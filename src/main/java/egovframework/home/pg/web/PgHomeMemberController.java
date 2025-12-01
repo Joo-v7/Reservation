@@ -107,14 +107,31 @@ public class PgHomeMemberController {
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
 
-    // 마이페이지 - 계정 - 내 정보 페이지
+    /**
+     * 마이페이지 - 회원정보 - 내 정보 페이지
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 내 정보 페이지
+     * @throws Exception
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/myPage/myInfoList.do")
     public String myInfoList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         return "home/pg/myInfoList";
     }
 
-    // 마이페이지 - 계정 - 내 정보 데이터
+    /**
+     * 마이페이지 - 회원정보 - 내 정보 데이터
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @param authentication
+     * @return 내 정보 데이터
+     * @throws Exception
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/myPage/getMyInfoList.do")
     public ResponseEntity<?> getMyInfoList(
@@ -137,7 +154,15 @@ public class PgHomeMemberController {
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
 
-    // 마이페이지 - 예약 - 내 예약 페이지
+    /**
+     * 마이페이지 - 예약 - 내 예약 페이지
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 내 예약 데이터
+     * @throws Exception
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/myPage/myReservationList.do")
     public String myReservationList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
@@ -156,7 +181,16 @@ public class PgHomeMemberController {
         return "home/pg/myReservationList";
     }
 
-    // 마이페이지 - 예약 - 내 예약 데이터
+    /**
+     * 마이페이지 - 예약 - 내 예약 데이터
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @param authentication
+     * @return 내 예약 데이터
+     * @throws Exception
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/myPage/getMyReservationList.do")
     public ResponseEntity<?> getMyReservationList(
@@ -230,8 +264,15 @@ public class PgHomeMemberController {
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
 
-
-    // 마이페이지 - 게시판 - 내 게시글 페이지
+    /**
+     * 마이페이지 - 나의 게시글 - 내 게시글 페이지
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 내 게시글 페이지
+     * @throws Exception
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/myPage/myBoardList.do")
     public String myBoardList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {

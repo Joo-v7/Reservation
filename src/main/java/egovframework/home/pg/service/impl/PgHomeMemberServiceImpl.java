@@ -26,11 +26,23 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
     private final PgHomeMemberMapper pgHomeMemberMapper;
     private final PgHomeMemberRoleMapper pgHomeMemberRoleMapper;
 
+    /**
+     * 회원 - 총 개수
+     * @param param
+     * @return 회원의 총 개수
+     * @throws DataAccessException
+     */
     @Override
     public double getMemberTotalCnt(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeMemberMapper.getMemberTotalCnt(param);
     }
 
+    /**
+     * 회원 - 회원 리스트
+     * @param param
+     * @return 회원 데이터 리스트
+     * @throws DataAccessException
+     */
     @Override
     public List<EgovMap> getMemberList(HashMap<String, Object> param) throws DataAccessException {
 
@@ -53,6 +65,12 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
         return list;
     }
 
+    /**
+     * 회원 - 단일 조회 by ID (PK)
+     * @param memberId
+     * @return 회원 단일 데이터
+     * @throws Exception
+     */
     @Override
     public EgovMap getMemberById(Long memberId) throws Exception {
 
@@ -77,6 +95,12 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
         return memberMap;
     }
 
+    /**
+     * 회원 - 단일 조회 by username (login ID)
+     * @param username
+     * @return 회원 단일 데이터
+     * @throws DataAccessException
+     */
     @Override
     public EgovMap getMemberByUsername(String username) throws DataAccessException {
         return pgHomeMemberMapper.getMemberByUsername(username);
@@ -123,28 +147,34 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
 
     }
 
+    /**
+     * 회원 - 상태 조회 by username (login ID)
+     * @param username
+     * @return 회원 상태
+     * @throws DataAccessException
+     */
     @Override
     public String getMemberStatusByUsername(String username) throws DataAccessException {
         return pgHomeMemberMapper.getMemberStatusByUsername(username);
     }
 
-    @Transactional
-    @Override
-    public boolean setMemberStatus(HashMap<String, Object> param) throws DataAccessException {
-        boolean result = false;
 
-        if(pgHomeMemberMapper.setMemberStatus(param) > 0) {
-            result = true;
-        }
-
-        return result;
-    }
-
+    /**
+     * 회원 - username(로그인 아이디) 중복 체크
+     * @param username
+     * @return 아이디 중복 결과
+     * @throws DataAccessException
+     */
     @Override
     public boolean existsByUsername(String username) throws DataAccessException {
         return pgHomeMemberMapper.existsByUsername(username);
     }
 
+    /**
+     * 회원 - 최근 로그인 일시 업데이트
+     * @param username
+     * @throws DataAccessException
+     */
     @Transactional
     @Override
     public void setUpdateLastLoginAtByUsername(String username) throws DataAccessException {

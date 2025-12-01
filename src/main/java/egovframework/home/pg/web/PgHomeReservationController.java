@@ -40,6 +40,15 @@ public class PgHomeReservationController {
     private final PgHomeReservationService pgHomeReservationService;
     private final PgHomeRoomService pgHomeRoomService;
 
+    /**
+     * 예약 - 예약 리스트 (달력)
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 예약 달력 페이지
+     * @throws Exception
+     */
     @RequestMapping("/reservationList.do")
     public String reservationList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         List<HashMap<String, String>> statusList = new ArrayList<>();
@@ -52,19 +61,35 @@ public class PgHomeReservationController {
             statusList.add(map);
         }
 
+        // 회의실 리스트
+        List<EgovMap> roomList = pgHomeRoomService.getRoomList(param);
+
         model.put("reservationStatusList", statusList);
+        model.put("roomList", roomList);
 
         return "home/pg/reservationList";
     }
 
+    /**
+     * 예약 - 예약 데이터 (달력)
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 예약 데이터
+     * @throws Exception
+     */
     @RequestMapping("/getReservationList.do")
     public ResponseEntity<?> getReservationList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
 
         try {
-
+            List<EgovMap> roomList = pgHomeRoomService.getRoomList(param);
+            EgovMap room = pgHomeRoomService.getRoomById(param);
             List<EgovMap> reservationList = pgHomeReservationService.getReservationList(param);
             retMap.put("error", "N");
+            retMap.put("roomList", roomList);
+            retMap.put("room", room);
             retMap.put("dataMap", reservationList);
 
         } catch (DataAccessException | MultipartException | NullPointerException | IllegalArgumentException e) {
@@ -74,33 +99,44 @@ public class PgHomeReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
 
-    @RequestMapping("/getReservationById.do")
-    public ResponseEntity<?> getReservationById(HttpServletRequest req, HttpServletResponse res, @RequestParam Long memberId) throws Exception {
-        HashMap<String, Object> retMap = new HashMap<>();
-
-        try {
-
-            EgovMap reservation = pgHomeReservationService.getReservationById(memberId);
-            retMap.put("error", "N");
-            retMap.put("dataMap", reservation);
-
-        } catch (DataAccessException | MultipartException | NullPointerException | IllegalArgumentException e) {
-            log.error("PgHomeReservationController:getReservationById.do error={}", e.getMessage());
-            throw e;
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(retMap);
-    }
-
+    /**
+     * 예약 - 등록/수정 페이지
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 예약 등록/수정 페이지
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/reservation.do")
-    public String reservationForm(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+    public String reservationForm(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) {
+        // action (insert/update)
+        String action = StringUtils.stripToEmpty((String) param.get("action"));
+
+        if (action.equals("update")) {
+            EgovMap reservation = pgHomeReservationService.getReservation(param);
+            model.addAttribute("reservationData", reservation);
+        }
+
         List<EgovMap> roomList = pgHomeRoomService.getRoomList(param);
+
         model.addAttribute("roomList", roomList);
 
         return "home/pg/reservation";
     }
 
+    /**
+     * 예약 - 등록/수정
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @param attachment
+     * @param daysOfWeeks
+     * @param authentication
+     * @return 예약 등록/수정 결과
+     * @throws Exception
+     */
     @PreAuthorize("isAuthenticated()")
     @RequestMapping("/setReservationMerge.do")
     public ResponseEntity<?> setReservationMerge(
@@ -165,7 +201,40 @@ public class PgHomeReservationController {
 
     }
 
-    // 첨부파일 다운로드
+    /**
+     * 예약 - 취소
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @throws Exception
+     */
+    @RequestMapping("/setReservationCancel.do")
+    public ResponseEntity<?> setReservationCancel(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
+
+        param.put("status", ReservationStatus.CANCELLED.name());
+
+        if(pgHomeReservationService.setUpdateReservationStatus(param)) {
+            retMap.put("error", "N");
+            retMap.put("successTitle", "Success");
+            retMap.put("successMsg", "성공적으로 취소 되었습니다.");
+        } else {
+            retMap.put("error", "Y");
+            retMap.put("errorTitle", "예약 취소");
+            retMap.put("errorMsg", "예약 취소 처리 중 오류가 발생했습니다.");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
+
+    /**
+     * 예약 - 첨부파일 다운로드
+     * @param req
+     * @param res
+     * @param fileName
+     * @throws Exception
+     */
     @RequestMapping("/reservation/attachment.do")
     public void downloadAttachment(
             HttpServletRequest req,

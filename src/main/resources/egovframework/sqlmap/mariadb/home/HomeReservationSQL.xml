@@ -26,10 +26,13 @@
         JOIN ROOM r ON rv.room_id = r.room_id
         LEFT JOIN MEMBER m ON rv.member_id = m.member_id
         WHERE rv.status IN ('APPROVED', 'PENDING')
+        <if test='roomId != null and roomId != ""'>
+            AND rv.room_id = #{roomId, jdbcType=VARCHAR}
+        </if>
     </select>
 
     <!-- 예약 조회 by reservation_id (PK) -->
-    <select id="getReservationById" parameterType="Long" resultType="egovMap">
+    <select id="getReservation" parameterType="hashMap" resultType="egovMap">
         SELECT
             rv.reservation_id,
             rv.room_id,
@@ -58,6 +61,9 @@
     <insert id="setReservationMerge" parameterType="hashMap">
         INSERT INTO RESERVATION
         (
+         <if test="reservationId != null and reservationId != ''">
+             reservation_id,
+         </if>
          room_id,
          member_id,
          type,
@@ -74,6 +80,9 @@
         )
         VALUES
             (
+             <if test="reservationId != null and reservationId != ''">
+                 #{reservationId, jdbcType=INTEGER},
+             </if>
              #{roomId, jdbcType=INTEGER},
              #{memberId, jdbcType=INTEGER},
              #{type, jdbcType=CHAR},
@@ -131,8 +140,9 @@
             WHERE room_id = #{roomId, jdbcType=BIGINT}
               AND status IN ('PENDING', 'APPROVED')
               -- 수정이면 자기 자신 제외
-              AND (#{reservationId, jdbcType=BIGINT} IS NULL
-                OR reservation_id != #{reservationId, jdbcType=BIGINT})
+              <if test="reservationId != null and reservationId != ''">
+                  AND reservation_id != #{reservationId, jdbcType=BIGINT}
+              </if>
               -- 날짜 체크
               AND COALESCE(#{endDate, jdbcType=DATE}, #{startDate, jdbcType=DATE}) >= start_date
               AND COALESCE(end_date, start_date) >= #{startDate, jdbcType=DATE}
@@ -178,11 +188,43 @@
                 AND rv.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
             </if>
         </where>
-        ORDER BY rv.start_date
+        ORDER BY rv.reg_dt DESC
         LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
     </select>
 
-    <!-- 예약 취소 -->
+
+    <!-- 예약 상태 변경 -->
+    <update id="setUpdateReservationStatus" parameterType="hashMap">
+        UPDATE RESERVATION rv
+        SET
+            rv.status = #{status, jdbcType=VARCHAR},
+            rv.updt_dt = NOW()
+        WHERE
+            rv.reservation_id = #{reservationId, jdbcType=BIGINT}
+          AND (
+            -- PENDING/APPROVED 가 아니면 그냥 변경
+            #{status, jdbcType=CHAR} NOT IN ('PENDING', 'APPROVED')
+
+                -- PENDING/APPROVED 로 바꾸려면, 겹치는 예약이 없어야 함
+                OR NOT EXISTS (
+                SELECT 1
+                FROM RESERVATION r2
+                WHERE r2.room_id = rv.room_id
+                  AND r2.status IN ('PENDING', 'APPROVED')
+                  AND r2.reservation_id != rv.reservation_id
+
+                  -- 날짜 구간 겹침 체크
+                  AND COALESCE(r2.end_date, r2.start_date) >= rv.start_date
+                  AND COALESCE(rv.end_date, rv.start_date) >= r2.start_date
+
+                  -- 시간 구간 겹침 체크
+                  AND NOT (
+                    rv.start_at >= r2.end_at
+                    OR r2.start_at >= rv.end_at
+                  )
+                )
+            )
+    </update>
 
 
 
@@ -223,38 +265,6 @@
         LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
     </select>
 
-    <!-- 예약 관리 - 예약 상태 변경 -->
-    <update id="setUpdateReservationStatus" parameterType="hashMap">
-        UPDATE RESERVATION rv
-        SET
-            rv.status = #{status, jdbcType=VARCHAR},
-            rv.updt_dt = NOW()
-        WHERE
-            rv.reservation_id = #{reservationId, jdbcType=BIGINT}
-          AND (
-            -- PENDING/APPROVED 가 아니면 그냥 변경
-            #{status, jdbcType=CHAR} NOT IN ('PENDING', 'APPROVED')
-
-            -- PENDING/APPROVED 로 바꾸려면, 겹치는 예약이 없어야 함
-            OR NOT EXISTS (
-                SELECT 1
-                FROM RESERVATION r2
-                WHERE r2.room_id = rv.room_id
-                  AND r2.status IN ('PENDING', 'APPROVED')
-                  AND r2.reservation_id != rv.reservation_id
-
-                  -- 날짜 구간 겹침 체크
-                  AND COALESCE(r2.end_date, r2.start_date) >= rv.start_date
-                  AND COALESCE(rv.end_date, rv.start_date) >= r2.start_date
-
-                  -- 시간 구간 겹침 체크
-                  AND NOT (
-                    rv.start_at >= r2.end_at
-                    OR r2.start_at >= rv.end_at
-                  )
-                )
-            )
-    </update>
 
 
 

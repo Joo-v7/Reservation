@@ -33,15 +33,23 @@
         <div class="col-12 col-md-10 col-lg-10">
 
           <form id="reservationForm" method="post" enctype="multipart/form-data">
+            <%-- 등록일떄는 쿼리스트링에 roomId / 수정일때는 model의 reservation에 roomId --%>
+            <c:set var="isUpdate" value="${param.action eq 'update'}" />
+            <c:set var="selectedRoomId" value="${not empty param.roomId ? param.roomId : reservationData.roomId}" />
+
+            <c:if test="${isUpdate}">
+              <input type="hidden" id="reservationId" name="reservationId" value="${reservationData.reservationId}" />
+            </c:if>
+
             <p class="small"><span class="text-danger mb-3">*</span> 는 필수 입력 사항입니다.</p>
 
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">회의실 <span class="text-danger">*</span></dt>
               <dd class="col-sm-3">
                   <select id="room" name="roomId" class="form-select" required>
-                    <option value="" selected>선택</option>
+                    <option value="" <c:if test="${param.roomId eq ''}">selected</c:if>>선택</option>
                     <c:forEach var="room" items="${roomList}">
-                      <option value="${room.roomId}" data-capacity="${room.capacity}">${room.name}</option>
+                    <option value="${room.roomId}" data-capacity="${room.capacity}" <c:if test="${selectedRoomId == room.roomId}">selected</c:if>>${room.name}</option>
                     </c:forEach>
                   </select>
               </dd>
@@ -54,7 +62,8 @@
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="type" id="dateTypeRegular" value="R">
+                  <input class="form-check-input" type="radio" name="type" id="dateTypeRegular" value="R"
+                         ${isUpdate && reservationData.type eq 'R' ? 'checked' : ''}>
                   <label class="form-check-label" for="dateTypeRegular">정기</label>
                 </div>
 
@@ -65,25 +74,27 @@
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">회의명 <span class="text-danger">*</span></dt>
               <dd class="col-sm-6">
-                <input type="text" class="form-control" id="name" name="name" maxlength="20" placeholder="회의명을 입력하세요." required >
+                <input type="text" class="form-control" id="name" name="name"
+                       value="${isUpdate ? reservationData.name : ''}"
+                       maxlength="20" placeholder="회의명을 입력하세요." required >
               </dd>
             </dl>
 
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">안건 <span class="text-danger">*</span></dt>
               <dd class="col-sm-6">
-                <input type="text" class="form-control" id="agenda" name="agenda" maxlength="50" placeholder="안건을 입력하세요." required>
+                <input type="text" class="form-control" id="agenda" name="agenda"
+                       value="${isUpdate ? reservationData.agenda : ''}"
+                       maxlength="50" placeholder="안건을 입력하세요." required>
               </dd>
             </dl>
 
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">참석인원 <span class="text-danger">*</span></dt>
               <dd class="col-sm-2">
-                <select id="attendeeCount" name="attendeeCount" class="form-select" required>
+                <select id="attendeeCount" name="attendeeCount" class="form-select" required
+                  <c:if test="${isUpdate}"> data-selected="${reservationData.attendeeCount}"</c:if>>
                   <option value="" selected>선택</option>
-<%--                  <c:forEach var="i" begin="1" end="100">--%>
-<%--                    <option value="${i}">${i}</option>--%>
-<%--                  </c:forEach>--%>
                 </select>
               </dd>
             </dl>
@@ -91,13 +102,15 @@
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">회의일자 <span class="text-danger">*</span></dt>
               <dd class="col-sm-3">
-                <input type="date" class="date form-control" id="startDate" name="startDate" required>
+                <input type="date" class="date form-control" id="startDate" name="startDate" required
+                       value="<c:if test='${isUpdate}'><fmt:formatDate value='${reservationData.startDate}' pattern='yyyy-MM-dd'/></c:if>">
               </dd>
               <dd class="col-auto d-flex align-items-center justify-content-center px-0">
                 ~
               </dd>
               <dd class="col-sm-3">
-                <input type="date" class="date form-control" id="endDate" name="endDate">
+                <input type="date" class="date form-control" id="endDate" name="endDate"
+                       value="<c:if test='${isUpdate}'><fmt:formatDate value='${reservationData.endDate}' pattern='yyyy-MM-dd'/></c:if>">
               </dd>
             </dl>
 
@@ -106,32 +119,38 @@
               <dd class="col-sm-10 d-flex gap-3 pt-2">
 
                 <div class="form-check form-check-inline">
-                  <input id="mon" class="form-check-input" type="checkbox" name="daysOfWeek" value="1">
+                  <input id="mon" class="form-check-input" type="checkbox" name="daysOfWeek" value="1"
+                         <c:if test="${isUpdate and fn:contains(reservationData.daysOfWeek, '1')}">checked</c:if>>
                   <label class="form-check-label" for="mon">월</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="tue" class="form-check-input" type="checkbox" name="daysOfWeek" value="2">
+                  <input id="tue" class="form-check-input" type="checkbox" name="daysOfWeek" value="2"
+                         <c:if test="${isUpdate and fn:contains(reservationData.daysOfWeek, '2')}">checked</c:if>>
                   <label class="form-check-label" for="tue">화</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="wed" class="form-check-input" type="checkbox" name="daysOfWeek" value="3">
+                  <input id="wed" class="form-check-input" type="checkbox" name="daysOfWeek" value="3"
+                         <c:if test="${isUpdate and fn:contains(reservationData.daysOfWeek, '3')}">checked</c:if>>
                   <label class="form-check-label" for="wed">수</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="thu" class="form-check-input" type="checkbox" name="daysOfWeek" value="4">
+                  <input id="thu" class="form-check-input" type="checkbox" name="daysOfWeek" value="4"
+                         <c:if test="${isUpdate and fn:contains(reservationData.daysOfWeek, '4')}">checked</c:if>>
                   <label class="form-check-label" for="thu">목</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="fri" class="form-check-input" type="checkbox" name="daysOfWeek" value="5">
+                  <input id="fri" class="form-check-input" type="checkbox" name="daysOfWeek" value="5"
+                         <c:if test="${isUpdate and fn:contains(reservationData.daysOfWeek, '5')}">checked</c:if>>
                   <label class="form-check-label" for="fri">금</label>
                 </div>
 
                 <div class="form-check form-check-inline">
-                  <input id="sat" class="form-check-input" type="checkbox" name="daysOfWeek" value="6">
+                  <input id="sat" class="form-check-input" type="checkbox" name="daysOfWeek" value="6"
+                         <c:if test="${isUpdate and fn:contains(reservationData.daysOfWeek, '6')}">checked</c:if>>
                   <label class="form-check-label" for="sat">토</label>
                 </div>
 
@@ -142,14 +161,16 @@
               <dt class="col-sm-2 col-form-label">회의시간 <span class="text-danger">*</span></dt>
               <dd class="col-sm-3">
                 <!-- min:06 / max:22 input type이 time이면 선택은 가능하지만 제출시 유효성 검사에서 걸러줌 -->
-                <input type="time" class="form-control" id="startAt" name="startAt" min="06:00" max="22:00" required>
+                <input type="time" class="form-control" id="startAt" name="startAt" min="06:00" max="22:00" required
+                       value="${isUpdate ? fn:substring(reservationData.startAt, 0, 5) : ''}">
               </dd>
               <dd class="col-auto d-flex align-items-center justify-content-center px-0">
                 ~
               </dd>
               <dd class="col-sm-3">
                 <!-- min:06 / max:22 input type이 time이면 선택은 가능하지만 제출시 유효성 검사에서 걸러줌 -->
-                <input type="time" class="form-control" id="endAt" name="endAt" min="06:00" max="22:00" required>
+                <input type="time" class="form-control" id="endAt" name="endAt" min="06:00" max="22:00" required
+                       value="${isUpdate ? fn:substring(reservationData.endAt, 0, 5) : ''}">
               </dd>
               <dd class="offset-sm-2 col-sm-10">
                 <small class="text-muted">* 오전 6시부터 오후 10시까지만 선택할 수 있습니다.</small>
@@ -159,6 +180,7 @@
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">첨부파일</dt>
               <dd class="col-sm-6">
+                <!-- TODO 첨부파일 수정?? -->
                 <input class="form-control" type="file" id="attachment" name="attachment">
               </dd>
             </dl>
@@ -207,6 +229,22 @@ function reservation() {
 
   // 이벤트 등록
   bindEvents();
+
+  // 회의실 선택되어 있으면 참석인원 업데이트
+  updateAttendeeCapacity();
+
+  if (${isUpdate}) {
+    const type = "${reservationData.type}";
+    if (type === "R") { // 정기
+      $('#dateTypeRegular').prop('checked', true);
+      $('#weekdaySection').show();
+      $('#endDate').prop('disabled', false);
+    } else { // 일자
+      $('#dateTypeOnce').prop('checked', true);
+      $('#weekdaySection').hide();
+      $('#endDate').prop('disabled', true).val('');
+    }
+  }
 
 }
 
@@ -359,7 +397,8 @@ function bindEvents() {
 
   // 일자/정기
   $('#weekdaySection').hide();
-  $('#endDate').prop('disabled', true).val('');
+  $('#endDate').prop('disabled', true);
+  // $('#endDate').prop('disabled', true).val('');
   // $('input[name="type"]').prop('checked', false);
 
   $('input[name="type"]').on('change', function () {
@@ -376,23 +415,37 @@ function bindEvents() {
 
   // 회의실 선택하면 참석자 최대 인원을 회의실 용량으로 변경
   $('#room').on('change', function() {
-    const capacity = $(this).find(":selected").data("capacity");
-    const $attendeeCount = $('#attendeeCount');
-
-    $attendeeCount.empty();
-    $attendeeCount.append('<option value="">선택</option>');
-
-    if (!capacity) return;
-
-    for (let i = 1; i <= capacity; i++) {
-      $attendeeCount.append('<option value="' + i + '">' + i + '</option>');
-    }
+    updateAttendeeCapacity();
   });
 
   // 오늘 날짜 세팅
   let today = new Date().toISOString().split("T")[0];
   console.log(today);
   $('#startDate, #endDate').attr('min', today);
+
+}
+
+// 회의실 select box에 따른 참석인원 수
+function updateAttendeeCapacity() {
+  const capacity = $('#room').find(':selected').data('capacity');
+  const $attendeeCount = $('#attendeeCount');
+
+  // update면 기존 capacity 데이터 있음
+  const selected = $attendeeCount.data('selected');
+
+  $attendeeCount.empty();
+  $attendeeCount.append('<option value="">선택</option>');
+
+  if (!capacity) return;
+
+  for (let i = 1; i <= capacity; i++) {
+    $attendeeCount.append('<option value="' + i + '">' + i + '</option>');
+  }
+
+  // update면 값 세팅
+  if (selected) {
+    $attendeeCount.val(String(selected));
+  }
 
 }
 

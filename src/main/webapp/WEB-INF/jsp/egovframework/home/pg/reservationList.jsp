@@ -90,16 +90,69 @@
 <%--      </jsp:include>--%>
 <%--    </div>--%>
 
-    <div class="col-lg-12">
+<%--    <div class="col-lg-12">--%>
+    <div class="col-12 col-lg-8 mb-4">
 
-      <div id='calendar'></div>
+      <div id="calendar"></div>
       <div class="d-flex justify-content-end" style="margin-bottom:10px; font-size:15px;">
         <span style="color:black; font-size:18px;">●</span> 관리자 승인대기
-        &nbsp;&nbsp;
+        &nbsp;&nbsp; <!-- 줄바꿈 없는 공백 -->
         <span style="color:blue; font-size:18px;">●</span> 일자
         &nbsp;&nbsp;
         <span style="color:red; font-size:18px;">●</span> 정기
       </div>
+
+    </div>
+
+    <div class="col-12 col-lg-4 mt-4">
+
+      <div class="mb-3 mt-3">
+        <label for="roomSelect" class="text-muted small mb-1"></label>
+        <select id="roomSelect" class="form-select">
+          <option value="" <c:if test="${param.roomId eq ''}">selected</c:if>>전체</option>
+          <c:forEach var="room" items="${roomList}">
+            <option value="${room.roomId}" ${param.roomId == room.roomId ? 'selected' : ''}>${room.name}</option>
+          </c:forEach>
+        </select>
+      </div>
+
+      <div class="table-responsive">
+        <table id="dataList" class="dataList table table-group-divider mb-3 shadow">
+          <tbody>
+          <tr>
+            <td colspan="2" class="p-0 border-0">
+              <img id="roomImage" src='<c:url value="/assets/room/defaultRoomImage.jpg"/>' class="img-fluid w-100" alt="회의실 이미지">
+            </td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-dark text-nowrap">회의실명</th>
+            <td id="nameRoom"></td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-dark text-nowrap">수용인원</th>
+            <td><span id="capacity"></span> 명</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-dark text-nowrap">설명</th>
+            <td id="description"></td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-danger text-nowrap">문의사항</th>
+            <td>rlawngur145@naver.com</td>
+          </tr>
+          </tbody>
+        </table>
+        <!-- ===================================== -->
+
+        <!-- 버튼 영역 -->
+        <div class="d-grid gap-2">
+          <button id="reservationBtn" type="button" class="btn btn-primary flex-grow-1">예약하기</button>
+<%--          <button type="button" class="btn btn-outline-secondary">목록</button>--%>
+        </div>
+      </div>
+
+
+    </div>
 
       <!-- 예약 상세 모달 -->
       <div class="modal fade" id="reservationDetailModal" tabindex="-1" aria-hidden="true">
@@ -189,6 +242,8 @@
 <script>
 // fullcalender Started Bundle
 document.addEventListener('DOMContentLoaded', function() {
+  toggleReservationBtn();
+
   let calendarEl = document.getElementById('calendar');
 
   let calendar = new FullCalendar.Calendar(calendarEl, {
@@ -204,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
     headerToolbar: {
       left: 'prevYear,prev,next,nextYear today',
       center: 'title',
-      right: 'reservation dayGridMonth,timeGridWeek,timeGridDay' // timeGridWeek/timeGridDay는 유료
+      right: 'dayGridMonth,timeGridWeek,timeGridDay' // timeGridWeek/timeGridDay는 유료
     },
 
     // 버튼
@@ -216,14 +271,14 @@ document.addEventListener('DOMContentLoaded', function() {
       register: '예약 등록하기'
     },
 
-    customButtons: {
-      reservation: {
-        text: '회의실 예약하기',
-        click: function() {
-          window.location.href = '/reservation.do';
-        }
-      }
-    },
+    // customButtons: {
+    //   reservation: {
+    //     text: '회의실 예약하기',
+    //     click: function() {
+    //       window.location.href = '/reservation.do';
+    //     }
+    //   }
+    // },
 
     // 선택 관련
     selectable: true,
@@ -259,13 +314,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
       let startDate = dateFormat(monthStart); // yyyy-MM-dd
       let endDate   = dateFormat(monthEnd);   // yyyy-MM-dd
+      let selectedRoomId = $('#roomSelect').val();
 
       $.ajax({
         url: '/getReservationList.do',
         dataType: 'json',
         data: {
           start: startDate,
-          end: endDate
+          end: endDate,
+          roomId: selectedRoomId
         },
         success: function(res) {
           console.log('ajax success:', res);
@@ -321,6 +378,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log('events', events);
 
+            // 회의실 정보 테이블
+            dataList(res.room);
+
             successCallback(events);
           } else {
             alert("예약 목록 조회 중 오류 발생 " + res.errorMsg);
@@ -373,7 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
     },
 
     eventClick: function (info) {
-      // 이벤트 클릭 시, 이벤트 수정 모달 폼을 여기에 표시하세요.
       showModalForm(info.event);
     },
 
@@ -381,7 +440,72 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   calendar.render();
+
+  // 회의실 셀렉트 변경
+  $('#roomSelect').on('change', function() {
+    toggleReservationBtn();
+    // 캘린더 다시 로드
+    calendar.refetchEvents();
+  });
+
+  // 예약하기 버튼
+  $('#reservationBtn').on('click', function() {
+    let selectedRoomId = $('#roomSelect').val();
+    window.location.href = '<c:url value="/reservation.do?action=insert"/>' + '&roomId=' + selectedRoomId;
+  });
 });
+
+// 예약하기 버튼 토글
+function toggleReservationBtn() {
+  let selectedRoomId = $('#roomSelect').val();
+  if (selectedRoomId === "" || selectedRoomId === null) {
+    $('#reservationBtn').hide();
+  } else {
+    $('#reservationBtn').show();
+  }
+}
+
+// 회의실 정보
+function dataList(data) {
+  $('.dataList tbody').empty();
+
+  let tableData = '';
+
+  if (!data) {
+    tableData += `<tr><td colspan="2" class="text-center text-muted small py-3">선택된 회의실이 없습니다.</td></tr>`;
+  } else {
+    let imageUrl = data.imageUrl || '<c:url value="/assets/room/defaultRoomImage.jpg"/>';
+    // 이미지
+    tableData += '<tr>';
+    tableData += '<td colspan="2" class="p-0 border-0">';
+    tableData += '<img src="' + imageUrl + '" class="img-fluid w-100" alt="회의실 이미지">';
+    tableData += '</td>';
+    tableData += '</tr>';
+    // 회의실명
+    tableData += '<tr>';
+    tableData += '<th scope="row" class="text-dark text-nowrap">회의실명</th>';
+    tableData += '<td>' + data.name + '</td>';
+    tableData += '</tr>';
+    // 수용인원
+    tableData += '<tr>';
+    tableData += '<th scope="row" class="text-dark text-nowrap">수용인원</th>';
+    tableData += '<td><span>' + data.capacity + '</span> 명</td>';
+    tableData += '</tr>';
+    // 설명
+    tableData += '<tr>';
+    tableData += '<th scope="row" class="text-dark text-nowrap">설명</th>';
+    tableData += '<td>' + (data.description || '회의실 설명이 없습니다.') + '</td>';
+    tableData += '</tr>';
+    // 문의사항 (하드코딩)
+    tableData += '<tr>';
+    tableData += '<th scope="row" class="text-danger text-nowrap">문의사항</th>';
+    tableData += '<td>rlawngur145@naver.com</td>';
+    tableData += '</tr>';
+  }
+
+  $('.dataList tbody').append(tableData);
+
+}
 
 function dateFormat(date) {
   let formattedDate = date.getFullYear() +

@@ -8,11 +8,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class PgHomeLoginController {
 
+    /**
+     * 사용자 - 로그인 페이지
+     * @return 사용자 로그인 페이지
+     */
     @RequestMapping("/login.do")
     public String login() {
         return "home/pg/login";
     }
 
+    /**
+     * 관리자 - 로그인 페이지
+     * @return 관리자 로그인 페이지
+     */
     @RequestMapping("/admin/login.do")
     public String adminLogin() {
         return "home/pg/admin/login";

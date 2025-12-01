@@ -40,11 +40,6 @@ public interface PgHomeMemberMapper {
     String getMemberStatusByUsername(String username) throws DataAccessException;
 
     /**
-     * 회원 - 상태 변경 (ACTIVE/INACTIVE/DELETED)
-     */
-    int setMemberStatus(HashMap<String, Object> param) throws DataAccessException;
-
-    /**
      * 회원 - 로그인 ID 존재여부 확인
      */
     boolean existsByUsername(String username) throws DataAccessException;

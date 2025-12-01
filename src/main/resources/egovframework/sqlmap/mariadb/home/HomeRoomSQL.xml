@@ -16,7 +16,6 @@
         FROM ROOM r
         <where>
             r.use_yn = 'Y'
-
             <if test='searchQuery != null and searchQuery != ""'>
                 AND r.name LIKE CONCAT('%', #{searchQuery, jdbcType=VARCHAR}, '%')
             </if>
@@ -26,11 +25,13 @@
             <when test='orderType == "regDt"'>ORDER BY r.reg_dt DESC</when>
             <otherwise>ORDER BY r.room_id ASC</otherwise>
         </choose>
-        LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
+        <if test="limitStart != null and recordCnt != null">
+            LIMIT #{limitStart, jdbcType=INTEGER}, #{recordCnt, jdbcType=INTEGER}
+        </if>
     </select>
 
     <!-- 회의실 단일 조회 -->
-    <select id="getRoomById" parameterType="Integer" resultType="egovMap">
+    <select id="getRoomById" parameterType="hashMap" resultType="egovMap">
         SELECT
              r.room_id
              , r.name
@@ -41,7 +42,7 @@
              , r.reg_dt
              , r.updt_dt
         FROM ROOM r
-        WHERE room_id = #{roomId, jdbcType=INTEGER}
+        WHERE r.room_id = #{roomId, jdbcType=INTEGER}
     </select>
 
     <!-- 회의실 전체 개수 조회 -->

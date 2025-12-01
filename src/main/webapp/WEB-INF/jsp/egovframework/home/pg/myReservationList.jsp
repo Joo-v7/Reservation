@@ -64,11 +64,12 @@
               <th class="text-center">종료시간</th>
               <th class="text-center">회의실</th>
               <th class="text-center">회의명</th>
-              <th class="text-center">안건</th>
+<%--              <th class="text-center">안건</th>--%>
               <th class="text-center">참석자 수</th>
-              <th class="text-center">첨부파일</th>
-              <th class="text-center">작성자</th>
+<%--              <th class="text-center">첨부파일</th>--%>
+<%--              <th class="text-center">작성자</th>--%>
               <th class="text-center">등록일</th>
+              <th class="text-center">관리</th>
           </tr>
           </thead>
           <tbody>
@@ -152,15 +153,25 @@
                     // 회의명
                     tableData += '<td class="text-center">' + $.trim(reservation.name ?? '-') + '</td>';
                     // 안건
-                    tableData += '<td class="text-center">' + $.trim(reservation.agenda ?? '-') + '</td>';
+                    // tableData += '<td class="text-center">' + $.trim(reservation.agenda ?? '-') + '</td>';
                     // 참석자 수
                     tableData += '<td class="text-center">' + (reservation.attendeeCount ?? '-') + '</td>';
                     // 첨부파일
-                    tableData += '<td class="text-center">' + (reservation.attachment ?? '-') + '</td>';
+                    // tableData += '<td class="text-center">' + (reservation.attachment ?? '-') + '</td>';
                     // 작성자
-                    tableData += '<td class="text-center">' + $.trim(reservation.memberName ?? '-') + '</td>';
+                    // tableData += '<td class="text-center">' + $.trim(reservation.memberName ?? '-') + '</td>';
                     // 등록일
                     tableData += '<td class="text-center">' + formatDate(reservation.regDt) + '</td>';
+                    // 관리
+                    if ($.trim(reservation.status) === 'PENDING') {
+                        tableData += '<td class="text-center">' +
+                            '<button type="button" class="updateBtn btn btn-sm btn-primary" data-reservation-id="' + reservation.reservationId + '">수정</button>' +
+                            '<button type="button" class="cancelBtn btn btn-sm btn-danger" data-reservation-id="' + reservation.reservationId + '">취소</button>' +
+                            '</td>';
+                    } else {
+                        tableData += '<td class="text-center text-muted">-</td>';
+                    }
+
 
                     tableData += '</tr>';
                 });
@@ -209,7 +220,25 @@
             $(this).css('cursor', 'pointer');
         });
 
-        // 테이블 바디 클릭
+        // 수정 버튼
+        $('#dataList').on('click', '.updateBtn', function() {
+            const reservationId = $(this).attr('data-reservation-id');
+            window.location.href = '<c:url value="/reservation.do?action=update"/>' + '&reservationId=' + reservationId;
+        });
+
+        // 취소 버튼
+        $('#dataList').on('click', '.cancelBtn', function() {
+            const reservationId = $(this).attr('data-reservation-id');
+            const url = '<c:url value="/setReservationCancel.do"/>' + '?reservationId=' + reservationId;
+
+            if (!confirm('취소하시겠습니까?')) return;
+
+            ajaxForm(url, null, function(res) {
+               if (res.error === 'N') {
+                   dataList();
+               }
+            });
+        });
 
     }
 

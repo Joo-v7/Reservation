@@ -9,19 +9,41 @@ import java.util.List;
 
 @Mapper
 public interface PgHomeReservationMapper {
-    List<EgovMap> getReservationList(HashMap<String, Object> param) throws Exception;
+    /**
+     * 예약 - 예약 전체 조회 (status가 'APPROVED', 'PENDING' 인 예약만)
+     */
+    List<EgovMap> getReservationList(HashMap<String, Object> param) throws DataAccessException;
 
-    int setReservationMerge(HashMap<String, Object> param) throws Exception;
+    /**
+     * 예약 - 예약 단일 조회 by reservation_id (PK)
+     */
+    EgovMap getReservation(HashMap<String, Object> param) throws DataAccessException;
 
-    boolean isDuplicatedReservation(HashMap<String, Object> param) throws Exception;
+    /**
+     * 예약 - 예약 merge
+     */
+    int setReservationMerge(HashMap<String, Object> param) throws DataAccessException;
 
-    EgovMap getReservationById(Long reservationId) throws Exception;
+    /**
+     * 예약 - 예약 전체 개수 조회
+     */
+    double getReservationTotalCnt(HashMap<String, Object> param) throws DataAccessException;
 
-    List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws Exception;
 
-    double getReservationTotalCnt(HashMap<String, Object> param) throws Exception;
+    /**
+     * 예약 - 예약 중복
+     */
+    boolean isDuplicatedReservation(HashMap<String, Object> param) throws DataAccessException;
 
-    int setUpdateReservationStatus(HashMap<String, Object> param) throws Exception;
+    /**
+     * 관리자 - 예약 전체 조회
+     */
+    List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws DataAccessException;
+
+    /**
+     * 관리자 = 상태(status) 업데이트
+     */
+    int setUpdateReservationStatus(HashMap<String, Object> param) throws DataAccessException;
 
     /**
      * 마이페이지 - 내 예약 데이터

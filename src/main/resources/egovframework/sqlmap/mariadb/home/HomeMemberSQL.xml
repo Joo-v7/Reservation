@@ -135,13 +135,6 @@
         WHERE USERNAME = #{username, jdbcType=VARCHAR}
     </select>
 
-    <!-- 회원 - 상태 변경 (ACTIVE/INACTIVE/DELETED -->
-    <update id="setMemberStatus" parameterType="hashMap">
-        UPDATE FROM MEMBER
-        SET status = #{status, jdbcType=VARCHAR}
-        WHERE member_id = #{memberId, jdbcType=INTEGER}
-    </update>
-
     <!-- 회원의 username(LoginID) 존재 여부 확인 --> 
     <select id="existsByUsername" parameterType="String">
         SELECT EXISTS (

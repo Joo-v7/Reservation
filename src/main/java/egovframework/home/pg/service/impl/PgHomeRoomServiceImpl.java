@@ -18,18 +18,38 @@ public class PgHomeRoomServiceImpl implements PgHomeRoomService {
 
     private final PgHomeRoomMapper pgHomeRoomMapper;
 
+    /**
+     * 사용 가능한 회의실 조건 조회
+     * @param param
+     * @return 회의실 데이터 리스트
+     * @throws DataAccessException
+     */
     @Override
     public List<EgovMap> getRoomList(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeRoomMapper.getRoomList(param);
     }
 
+    /**
+     * 회의실 단일 조회 by ID (PK)
+     * @param param
+     * @return 회의실 데이터
+     * @throws DataAccessException
+     */
     @Override
-    public EgovMap getRoom(HashMap<String, Object> param) throws DataAccessException {
-        return pgHomeRoomMapper.getRoom(param);
+    public EgovMap getRoomById(HashMap<String, Object> param) throws DataAccessException {
+        return pgHomeRoomMapper.getRoomById(param);
     }
 
+    /**
+     * 사용 가능한 회의실 전체 개수 조회
+     * @param param
+     * @return 사용 가능한 회의실 전체 개수
+     * @throws DataAccessException
+     */
     @Override
     public Double getRoomTotalCnt(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeRoomMapper.getRoomTotalCnt(param);
     }
+
+
 }

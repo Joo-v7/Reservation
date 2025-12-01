@@ -10,9 +10,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,21 +18,38 @@ import java.util.List;
 public class PgHomeReservationServiceImpl implements PgHomeReservationService {
 
     private final PgHomeReservationMapper pgHomeReservationMapper;
-    private final PgHomeRoomService pgHomeRoomService;
 
+    /**
+     * 예약 - 예약 전체 조회 (status가 'APPROVED', 'PENDING' 인 예약만)
+     * @param param
+     * @return 예약 데이터 리스트
+     * @throws DataAccessException
+     */
     @Override
-    public List<EgovMap> getReservationList(HashMap<String, Object> param) throws Exception {
+    public List<EgovMap> getReservationList(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeReservationMapper.getReservationList(param);
     }
 
+    /**
+     * 예약 - 예약 단일 조회 by reservation_id (PK)
+     * @param param
+     * @return 예약 단일 데이터
+     * @throws DataAccessException
+     */
     @Override
-    public EgovMap getReservationById(Long reservationId) throws Exception {
-        return pgHomeReservationMapper.getReservationById(reservationId);
+    public EgovMap getReservation(HashMap<String, Object> param) throws DataAccessException {
+        return pgHomeReservationMapper.getReservation(param);
     }
 
+    /**
+     * 예약 - 예약 merge
+     * @param param
+     * @return 성공 여부
+     * @throws DataAccessException
+     */
     @Transactional
     @Override
-    public boolean setReservationMerge(HashMap<String, Object> param) throws Exception {
+    public boolean setReservationMerge(HashMap<String, Object> param) throws DataAccessException {
         if(pgHomeReservationMapper.isDuplicatedReservation(param)) {
             throw new ConflictException("중복된 예약입니다.");
         }
@@ -45,11 +59,23 @@ public class PgHomeReservationServiceImpl implements PgHomeReservationService {
         return result > 0;
     }
 
+    /**
+     * 예약 - 예약 전체 개수 조회
+     * @param param
+     * @return 예약 전체 개수
+     * @throws DataAccessException
+     */
     @Override
-    public double getReservationTotalCnt(HashMap<String, Object> param) throws Exception {
+    public double getReservationTotalCnt(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeReservationMapper.getReservationTotalCnt(param);
     }
 
+    /**
+     * 예약 - 내 예약 데이터 리스트
+     * @param param
+     * @return 내 예약 데이터 리스트
+     * @throws DataAccessException
+     */
     @Override
     public List<EgovMap> getReservationListForMember(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeReservationMapper.getReservationListForMember(param);
@@ -59,14 +85,26 @@ public class PgHomeReservationServiceImpl implements PgHomeReservationService {
      * ============== 관리자 영역 ==============
      */
 
+    /**
+     * 관리자 - 예약 전체 조회
+     * @param param
+     * @return 예약 데이터 리스트
+     * @throws DataAccessException
+     */
     @Override
-    public List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws Exception {
+    public List<EgovMap> getReservationListForAdmin(HashMap<String, Object> param) throws DataAccessException {
         return pgHomeReservationMapper.getReservationListForAdmin(param);
     }
 
+    /**
+     * 관리자 - 예약 상태 업데이트
+     * @param param
+     * @return 상태 업데이트 결과 여부
+     * @throws DataAccessException
+     */
     @Transactional
     @Override
-    public boolean setUpdateReservationStatus(HashMap<String, Object> param) throws Exception {
+    public boolean setUpdateReservationStatus(HashMap<String, Object> param) throws DataAccessException {
         int result = pgHomeReservationMapper.setUpdateReservationStatus(param);
 
         return result > 0;

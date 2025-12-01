@@ -104,7 +104,7 @@ function dataList() {
         dataHtml += '<h2 class="card-title h4">' + room.name + '</h2>';
         dataHtml += '<p class="card-text">' + '수용인원: ' + room.capacity + '</p>';
         dataHtml += '<p class="card-text">' + room.description + '</p>';
-        dataHtml += '<a class="reservationBtn btn btn-primary" href="/reservationList.do">예약하기 →</a>';
+        dataHtml += '<a class="reservationBtn btn btn-primary"' + 'href="/reservationList.do?roomId=' + room.roomId + '">일정보기 →</a>';
         dataHtml += '</div>'
         dataHtml += '</div>'
         dataHtml += '</div>'
