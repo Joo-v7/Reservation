@@ -40,7 +40,7 @@
                 <div class="input-group">
                   <input id="username" name="username" type="text" class="form-control" placeholder="6~20자의 영문 소문자, 숫자를 입력하세요" maxlength="20" required>
                   <button type="button" id="checkIdBtn" class="btn btn-outline-secondary">중복확인</button>
-                  <div class="valid-feedback">사용가능한 아이디입니다.</div>
+                  <div class="valid-feedback">형식에 맞는 아이디입니다.</div>
                   <div class="invalid-feedback">6~20자의 영문 소문자, 숫자만 사용 가능합니다.</div>
                 </div>
               </dd>
@@ -49,9 +49,9 @@
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">비밀번호 <span class="text-danger">*</span></dt>
               <dd class="col-sm-7">
-                <input id="password" name="password" type="password" class="form-control" placeholder="비밀번호를 입력하세요." maxlength="20" required>
-                <div class="valid-feedback">사용 가능한 비밀번호입니다.</div>
-                <div class="invalid-feedback">비밀번호를 입력해주세요.</div>
+                <input id="password" name="password" type="password" class="form-control" placeholder="비밀번호를 입력하세요." min="6" maxlength="20" required>
+                <div class="valid-feedback">형식에 맞는 비밀번호입니다.</div>
+                <div class="invalid-feedback">소문자, 숫자, 특수문자를 각각 1개 이상 사용하여, 6~20자 이내로 입력해주세요.</div>
               </dd>
             </dl>
 
@@ -150,6 +150,11 @@ function submitJoinForm() {
   }
 
   // 비밀번호
+  if(!formErr && !isValidPassword($('#password').val())) {
+    formErr = true;
+    moveFocus = 'password';
+    errMsg = '비밀번호는 소문자, 숫자, 특수문자를 각각 1개 이상 사용하여, 6~20자 이내로 입력해주세요.';
+  }
 
   // 이름
   if(!formErr && !isValidName($('#name').val())) {
@@ -197,7 +202,7 @@ function submitJoinForm() {
   }
 
   // 수정/등록 결과
-  // ajaxForm(submit url, data form, result)
+  // (submit url, data form, result)
   ajaxForm('<c:url value="/setMemberMerge.do"/>', $form.serialize(), function (res) {
     // 응답 성공 시
     if (res.error === 'N') {
@@ -247,10 +252,22 @@ function bindEvents() {
     });
   });
 
-  // 비밀번호
+  // 비밀번호 (소문자, 숫자, 특수문자 허용 + 각 1개 이상)
+  $('#password').on('input', function() {
+    let val = $(this).val();
+
+    val = val.replace(/[^a-z0-9!@#$%^&*()\-=+{}\[\]:;'",.<>?\\/|~`]/gi, '').slice(0, 20);
+    $(this).val(val);
+
+    if (isValidPassword(val)) {
+      $(this).removeClass('is-invalid').addClass('is-valid');
+    } else {
+      $(this).removeClass('is-valid').addClass('is-invalid');
+    }
+  });
 
   // 이름 (한글만)
-  $('#name').on('input', function () {
+  $('#name').on('input', function() {
     const filtered = $(this).val().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣ]/g, '');
     $(this).val(filtered);
 
@@ -316,6 +333,12 @@ function isValidUsername(val) {
   return regex.test(val);
 }
 
+// 비밀번호 (소문자/숫자/특수문자
+function isValidPassword(val) {
+  val = $.trim(val);
+  const regex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-=+{}\[\]:;'",.<>?\\/|~`])[a-z0-9!@#$%^&*()\-=+{}\[\]:;'",.<>?\\/|~`]{6,20}$/;
+  return regex.test(val);
+}
 
 // 이름 (한글만)
 function isValidName(val) {

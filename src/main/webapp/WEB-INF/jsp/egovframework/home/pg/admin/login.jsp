@@ -98,12 +98,36 @@ function login() {
       $('#username').focus();
       return false;
     }
+
+    if (!isValidPassword($('#password').val())) {
+      e.preventDefault();
+      alert('비밀번호는 소문자, 숫자, 특수문자를 각각 1개 이상 사용하여, 6~20자 이내로 입력 가능합니다.');
+      $('#password').focus();
+      return false;
+    }
+
   });
 
+  // 아이디
   $('#username').on('input', function () {
     let filtered = $(this).val().toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
     $(this).val(filtered);
   });
+
+  // 비밀번호 (소문자, 숫자, 특수문자 허용 + 각 1개 이상)
+  $('#password').on('input', function() {
+    let val = $(this).val();
+
+    val = val.replace(/[^a-z0-9!@#$%^&*()\-=+{}\[\]:;'",.<>?\\/|~`]/gi, '').slice(0, 20);
+    $(this).val(val);
+
+    if (isValidPassword(val)) {
+      $(this).removeClass('is-invalid').addClass('is-valid');
+    } else {
+      $(this).removeClass('is-valid').addClass('is-invalid');
+    }
+  });
+
 
 }
 
@@ -111,6 +135,13 @@ function login() {
 function isValidUsername(val) {
   val = $.trim(val);
   const regex = /^[a-z0-9]{6,20}$/;
+  return regex.test(val);
+}
+
+// 비밀번호 (소문자/숫자/특수문자
+function isValidPassword(val) {
+  val = $.trim(val);
+  const regex = /^(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-=+{}\[\]:;'",.<>?\\/|~`])[a-z0-9!@#$%^&*()\-=+{}\[\]:;'",.<>?\\/|~`]{6,20}$/;
   return regex.test(val);
 }
 
