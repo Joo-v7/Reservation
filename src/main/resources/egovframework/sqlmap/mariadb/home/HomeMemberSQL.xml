@@ -178,6 +178,7 @@
             <if test="email != null and email != ''">email = #{email, jdbcType=VARCHAR},</if>
             <if test="birthdate != null and birthdate != ''">birthdate = #{birthdate, jdbcType=DATE},</if>
             <if test="status != null and status != ''">status = #{status, jdbcType=VARCHAR},</if>
+            <if test="status == 'DELETED'">del_dt = NOW(),</if>
             updt_dt = NOW()
         </set>
         WHERE member_id = #{memberId, jdbcType=INTEGER}

@@ -2,6 +2,7 @@ package egovframework.home.pg.web.admin;
 
 import egovframework.home.pg.common.code.MemberStatus;
 import egovframework.home.pg.common.code.ReservationStatus;
+import egovframework.home.pg.common.utils.RedisAuthUtil;
 import egovframework.home.pg.service.PgHomeMemberRoleService;
 import egovframework.home.pg.service.PgHomeMemberService;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,13 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/admin")
 public class PgHomeMemberAdminController {
 
     private final PgHomeMemberService pgHomeMemberService;
     private final PgHomeMemberRoleService pgHomeMemberRoleService;
+    private final RedisAuthUtil redisAuthUtil;
 
     /**
      * 회원 관리 - 회원 목록 페이지
@@ -44,7 +47,6 @@ public class PgHomeMemberAdminController {
      * @return 회원 목록 페이지
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/memberList.do")
     public String memberList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         List<HashMap<String, String>> statusList = new ArrayList<>();
@@ -71,7 +73,6 @@ public class PgHomeMemberAdminController {
      * @return 회원 데이터 리스트
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/getMemberList.do")
     public ResponseEntity<?> getMemberList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
@@ -148,7 +149,6 @@ public class PgHomeMemberAdminController {
      * @return 회원 단일 데이터
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/getMember.do")
     public ResponseEntity<?> getMember(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam Long memberId) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
@@ -192,7 +192,6 @@ public class PgHomeMemberAdminController {
      * @return 회원 정보 수정 결과
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/setMemberUpdate.do")
     public ResponseEntity<?> setMemberUpdate(
             HttpServletRequest req,
@@ -237,15 +236,67 @@ public class PgHomeMemberAdminController {
             log.error("== ADMIN == PgHomeMemberAdminController:setMemberUpdate.do error={}", e.getMessage());
             throw e;
         }
+        return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
 
+    /**
+     * 회원 관리 - 로그인 제한 관리 페이지
+     * @param req
+     * @param model
+     * @param param
+     * @return 로그인 제한 관리 페이지
+     * @throws Exception
+     */
+    @RequestMapping("/memberLoginBlockList.do")
+    public String memberLoginBlockList(HttpServletRequest req, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        return "home/pg/admin/memberLoginBlockList";
+    }
 
+    /**
+     * 회원 관리 - 로그인 제한 회원 데이터 리스트
+     * @param req
+     * @param model
+     * @param param
+     * @return 로그인 제한 회원 데이터 리스트
+     * @throws Exception
+     */
+    @RequestMapping("/getMemberLoginBlockList.do")
+    public ResponseEntity<?> getMemberLoginBlockList(HttpServletRequest req, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
 
+        List<HashMap<String, Object>> loginBlockMemberList = redisAuthUtil.getBlockedMemberList();
 
-
-        // TODO MEMBER ROLE 업데이트
-
-
+        retMap.put("error", "N");
+        retMap.put("dataList", loginBlockMemberList);
 
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
+
+    /**
+     * 회원 관리 - 로그인 제한 해제
+     * @param req
+     * @param model
+     * @param username
+     * @return 로그인 제한 해제 결과
+     * @throws Exception
+     */
+    @RequestMapping("/setMemberLoginUnblock.do")
+    public ResponseEntity<?> setMemberLoginBlock(HttpServletRequest req, ModelMap model, @RequestParam String username) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
+
+        if (redisAuthUtil.removeAllFromRedis(username)) {
+            retMap.put("error", "N");
+            retMap.put("successTitle", "로그인 제한 해제");
+            retMap.put("successMsg", "로그인 제한이 해제되었습니다.");
+        } else {
+            retMap.put("error", "Y");
+            retMap.put("errorTitle", "로그인 제한 해제");
+            retMap.put("errorMsg", "데이터 처리 중 오류가 발생했습니다.");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
+
+
+
 }

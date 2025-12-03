@@ -5,15 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class AuthUtil {
+public class RedisAuthUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -46,8 +47,10 @@ public class AuthUtil {
         String key = BLACKLIST + username;
         long ttlSeconds = TimeUnit.MINUTES.toSeconds(15); // 15분 TTL
 
+        long now = System.currentTimeMillis(); // block된 시각
+
         // Redis에 등록 (15분 후 자동 삭제)
-        redisTemplate.opsForValue().set(key, "LOCKED", ttlSeconds, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, now, ttlSeconds, TimeUnit.SECONDS);
     }
 
     /**
@@ -96,11 +99,53 @@ public class AuthUtil {
     }
 
     /**
-     * 레디스에서 제거
+     * 로그인 시도 횟수 레디스에서 제거
      */
     public void removeFromRedis(String username) {
         String key = LOGIN_ATTEMPT_COUNT + username;
         redisTemplate.delete(key);
     }
+
+    // ===== 관리자 =====
+
+    /**
+     * 관리자 - 로그인 제한 관리
+     */
+    public List<HashMap<String, Object>> getBlockedMemberList() {
+        List<HashMap<String, Object>> result = new ArrayList<>();
+
+        // Redis 내 블랙리스트
+        Set<String> keys = redisTemplate.keys(BLACKLIST + "*");
+
+        for (String key : keys) {
+            HashMap<String, Object> map = new HashMap<>();
+            // block 된 시각
+            Object blockedTime = redisTemplate.opsForValue().get(key);
+            // 남은 시간
+            Long expiredTime = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+
+            map.put("username", key.replace(BLACKLIST, ""));
+            map.put("blockedTime", blockedTime);
+            map.put("expiredTime", expiredTime);
+
+            result.add(map);
+        }
+
+        return result;
+    }
+
+    /**
+     * 로그인 시도 횟수/블랙리스트 레디스에서 제거
+     */
+    public boolean removeAllFromRedis(String username) {
+        String countKey = LOGIN_ATTEMPT_COUNT + username;
+        String blacklistKey = BLACKLIST + username;
+
+        redisTemplate.delete(countKey);
+        redisTemplate.delete(blacklistKey);
+
+        return true;
+    }
+
 
 }

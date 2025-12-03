@@ -81,9 +81,13 @@ public class PgHomeReservationController {
         HashMap<String, Object> retMap = new HashMap<>();
 
         try {
+            // 회의실 리스트
             List<EgovMap> roomList = pgHomeRoomService.getRoomList(param);
+            // 회의실 정보
             EgovMap room = pgHomeRoomService.getRoomById(param);
+            // 예약 리스트
             List<EgovMap> reservationList = pgHomeReservationService.getReservationList(param);
+
             retMap.put("error", "N");
             retMap.put("roomList", roomList);
             retMap.put("room", room);

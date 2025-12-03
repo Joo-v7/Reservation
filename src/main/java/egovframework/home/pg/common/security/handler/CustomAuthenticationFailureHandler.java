@@ -1,7 +1,7 @@
 package egovframework.home.pg.common.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import egovframework.home.pg.common.utils.AuthUtil;
+import egovframework.home.pg.common.utils.RedisAuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -17,14 +17,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
-    private final AuthUtil authUtil;
+    private final RedisAuthUtil redisAuthUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -32,8 +31,8 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
 
         String username = request.getParameter("username");
         // 로그인 시도 횟수 + 1
-        authUtil.increaseLoginAttemptCount(username);
-        int count = authUtil.getLoginAttemptCount(username);
+        redisAuthUtil.increaseLoginAttemptCount(username);
+        int count = redisAuthUtil.getLoginAttemptCount(username);
 
         String errorMsg = "로그인 실패 (" + count + "/5) \\n";
 

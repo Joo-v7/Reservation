@@ -15,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  <title>OnRoom 관리자 회원관리 페이지</title>
+  <title>OnRoom 관리자 회의실 관리 페이지</title>
   <!-- Favicon-->
   <link rel="icon" href="<c:url value='/assets/favicon.ico'/>"/>
   <!-- Core theme CSS (includes Bootstrap)-->
@@ -223,7 +223,7 @@ function dataList() {
 
   // form Submit [url, form, swal or toastr, validate, funcData]
   ajaxForm('<c:url value="/admin/getRoomList.do"/>', $('#searchForm').serialize(), function(data) {
-    if ($.trim(data.error) == 'N') {
+    if ($.trim(data.error) === 'N') {
       let tableData = '';
       let trClass = '';
       let page = Number(data.dataMap.page);

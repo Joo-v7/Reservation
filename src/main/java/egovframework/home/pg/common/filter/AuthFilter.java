@@ -2,7 +2,7 @@ package egovframework.home.pg.common.filter;
 
 import egovframework.home.pg.common.code.MemberStatus;
 import egovframework.home.pg.common.security.handler.CustomAuthenticationFailureHandler;
-import egovframework.home.pg.common.utils.AuthUtil;
+import egovframework.home.pg.common.utils.RedisAuthUtil;
 import egovframework.home.pg.service.impl.PgHomeMemberServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ import java.util.HashMap;
 public class AuthFilter extends OncePerRequestFilter {
 
     private final PgHomeMemberServiceImpl pgHomeMemberService;
-    private final AuthUtil authUtil;
+    private final RedisAuthUtil redisAuthUtil;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
     private final AntPathRequestMatcher loginMatcher = new AntPathRequestMatcher("/loginProcess.do", "POST");
@@ -71,15 +71,15 @@ public class AuthFilter extends OncePerRequestFilter {
             }
 
             // 블랙리스트 확인
-            if (authUtil.isBlacklist(username)) {
-                long remainingTime = authUtil.getBlacklistRemainSeconds(username);
+            if (redisAuthUtil.isBlacklist(username)) {
+                long remainingTime = redisAuthUtil.getBlacklistRemainSeconds(username);
                 throw new LockedException((int)Math.ceil(remainingTime) + "분 후 다시 로그인을 시도하세요");
             }
 
             // Redis 확인
-            if (authUtil.existsRedis(username)) {
+            if (redisAuthUtil.existsRedis(username)) {
                 // 현재 로그인 시도 횟수
-                int count = authUtil.getLoginAttemptCount(username);
+                int count = redisAuthUtil.getLoginAttemptCount(username);
                 // Redis에서 username의 로그인 시도 횟수 조회 실패
                 if (count < 0) {
                     throw new AuthenticationServiceException(username + " 로그인한 횟수를 찾을 수 없습니다.");
@@ -88,14 +88,14 @@ public class AuthFilter extends OncePerRequestFilter {
                 // 로그인 시도 횟수 5회 초과
                 if (count + 1 > 5) {
                     // 블랙리스트 등록 (15분)
-                    authUtil.addBlacklist(username);
+                    redisAuthUtil.addBlacklist(username);
                     // 해당 아이디의 로그인 시도 횟수 시간 리셋 설정 (15분)
-                    authUtil.resetLoginAttemptTTL(username);
+                    redisAuthUtil.resetLoginAttemptTTL(username);
                     throw new LockedException("로그인 시도 횟수 5회 초과, 15분 후 다시 시도하세요.");
                 }
 
             } else {
-                authUtil.registerInRedis(username);
+                redisAuthUtil.registerInRedis(username);
             }
 
             filterChain.doFilter(request, response);

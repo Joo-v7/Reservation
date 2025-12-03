@@ -1,6 +1,6 @@
 package egovframework.home.pg.common.security.handler;
 
-import egovframework.home.pg.common.utils.AuthUtil;
+import egovframework.home.pg.common.utils.RedisAuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -19,15 +19,15 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
-    private final AuthUtil authUtil;
+    private final RedisAuthUtil redisAuthUtil;
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         String username = request.getParameter("username");
         log.info("로그아웃: " + username);
 
-        if (authUtil.existsRedis(username)) {
-            authUtil.removeFromRedis(username);
+        if (redisAuthUtil.existsRedis(username)) {
+            redisAuthUtil.removeFromRedis(username);
         }
 
         HttpSession session = request.getSession(false);

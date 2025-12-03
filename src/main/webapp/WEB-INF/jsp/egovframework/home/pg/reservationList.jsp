@@ -76,6 +76,19 @@
     cursor: pointer !important;
   }
 
+  /* 이미지 크기 고정 */
+  .ratio-wrapper {
+    aspect-ratio: 16 / 9;     /* 카드의 고정 비율 */
+    overflow: hidden;          /* 넘치는 부분 잘라내기 */
+  }
+
+  .ratio-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;          /* 비율 유지하면서 꽉 채움 */
+    object-position: center;
+  }
+
 
 </style>
 
@@ -474,11 +487,14 @@ function dataList(data) {
   if (!data) {
     tableData += `<tr><td colspan="2" class="text-center text-muted small py-3">선택된 회의실이 없습니다.</td></tr>`;
   } else {
-    let imageUrl = data.imageUrl || '<c:url value="/assets/room/defaultRoomImage.jpg"/>';
+    const imagePath = '<c:url value="/attachment/image/"/>';
+    let image = data.imageUrl ? imagePath + data.imageUrl : '<c:url value="/assets/room/defaultRoomImage.jpg"/>';
     // 이미지
     tableData += '<tr>';
     tableData += '<td colspan="2" class="p-0 border-0">';
-    tableData += '<img src="' + imageUrl + '" class="img-fluid w-100" alt="회의실 이미지">';
+    tableData += '<div class="ratio-wrapper">'
+    tableData += '<img src="' + image + '" class="img-fluid w-100" alt="회의실 이미지">';
+    tableData += '</div>'
     tableData += '</td>';
     tableData += '</tr>';
     // 회의실명

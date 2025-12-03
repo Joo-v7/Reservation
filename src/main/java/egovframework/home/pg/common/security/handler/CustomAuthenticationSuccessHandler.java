@@ -1,6 +1,6 @@
 package egovframework.home.pg.common.security.handler;
 
-import egovframework.home.pg.common.utils.AuthUtil;
+import egovframework.home.pg.common.utils.RedisAuthUtil;
 import egovframework.home.pg.service.PgHomeMemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final AuthUtil authUtil;
+    private final RedisAuthUtil redisAuthUtil;
     private final PgHomeMemberService pgHomeMemberService;
 
     @Override
@@ -28,7 +28,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         // redis 정리
         String username = authentication.getName(); // username
-        authUtil.removeFromRedis(username);
+        redisAuthUtil.removeFromRedis(username);
 
         pgHomeMemberService.setUpdateLastLoginAtByUsername(username);
 

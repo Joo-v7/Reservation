@@ -33,6 +33,7 @@ import java.util.UUID;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/admin")
 public class PgHomeRoomAdminController {
 
@@ -47,7 +48,6 @@ public class PgHomeRoomAdminController {
      * @return 회의실 목록 페이지
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/roomList.do")
     public String roomListForm(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         return "/home/pg/admin/roomList";
@@ -62,7 +62,6 @@ public class PgHomeRoomAdminController {
      * @return 회의실 데이터 리스트
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/getRoomList.do")
     public ResponseEntity<?> getRoomList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
@@ -149,7 +148,6 @@ public class PgHomeRoomAdminController {
      * @return 회의실 Merge 결과
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/setRoomMerge.do")
     public ResponseEntity<?> setRoomMerge(
             HttpServletRequest req,
@@ -207,7 +205,6 @@ public class PgHomeRoomAdminController {
      * @return 회의실 사용여부 업데이트 결과
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/setRoomUseYnUpdate.do")
     public ResponseEntity<?> setRoomUseYnUpdate(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
@@ -229,6 +226,13 @@ public class PgHomeRoomAdminController {
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
 
+    /**
+     * 이미지 다운로드
+     * @param req
+     * @param res
+     * @param param
+     * @throws Exception
+     */
     @RequestMapping("/room/image.do")
     public void downloadImage(
             HttpServletRequest req,

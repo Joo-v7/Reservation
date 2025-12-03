@@ -28,6 +28,7 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/admin")
 public class PgHomeReservationAdminController {
 
@@ -43,7 +44,6 @@ public class PgHomeReservationAdminController {
      * @return 예약관리 페이지
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/reservationList.do")
     public String reservationList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         List<HashMap<String, String>> statusList = new ArrayList<>();
@@ -70,7 +70,6 @@ public class PgHomeReservationAdminController {
      * @return 예약 데이터 리스트
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/getReservationList.do")
     public ResponseEntity<?> getReservationList(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
@@ -141,7 +140,6 @@ public class PgHomeReservationAdminController {
      * @return 예약 상태 업데이트 결과
      * @throws Exception
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/setUpdateReservationStatus.do")
     public ResponseEntity<?> setUpdateReservationStatus(HttpServletRequest req, HttpServletResponse res, @RequestParam HashMap<String, Object> param) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
