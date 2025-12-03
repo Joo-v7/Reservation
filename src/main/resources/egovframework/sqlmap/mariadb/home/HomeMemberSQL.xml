@@ -27,6 +27,8 @@
             m.email,
             m.birthdate,
             m.status,
+            m.is_oauth,
+            m.oauth_provider,
             m.reg_dt,
             m.updt_dt,
             m.del_dt,
@@ -59,6 +61,8 @@
             m.email,
             m.birthdate,
             m.status,
+            m.is_oauth,
+            m.oauth_provider,
             m.reg_dt,
             m.updt_dt,
             m.del_dt,
@@ -82,6 +86,8 @@
             m.email,
             m.birthdate,
             m.status,
+            m.is_oauth,
+            m.oauth_provider,
             m.reg_dt,
             m.updt_dt,
             m.del_dt,
@@ -104,6 +110,12 @@
          phone,
          email,
          birthdate,
+         <if test="isOauth != null and isOauth !=''">
+             is_oauth,
+         </if>
+        <if test="oauthProvider != null and oauthProvider !=''">
+            oauth_provider,
+        </if>
          reg_dt
         )
         VALUES
@@ -114,6 +126,12 @@
              #{phone, jdbcType=VARCHAR},
              #{email, jdbcType=VARCHAR},
              #{birthdate, jdbcType=DATE},
+            <if test="isOauth != null and isOauth !=''">
+                #{isOauth, jdbcType=CHAR},
+            </if>
+            <if test="oauthProvider != null and oauthProvider !=''">
+                #{oauthProvider, jdbcType=VARCHAR},
+            </if>
              NOW()
             )
         ON DUPLICATE KEY UPDATE
@@ -151,10 +169,19 @@
         WHERE username = #{username, jdbcType=VARCHAR}
     </update>
 
-    <!-- 회원 수정 For Admin -->
-<!--    <update id="setMemberUpdate" parameterType="hashMap">-->
-<!--        UPDATE MEMBER m-->
-<!--    </update>-->
+    <!-- 회원 수정 -->
+    <update id="setMemberUpdate" parameterType="hashMap">
+        UPDATE MEMBER
+        <set>
+            <if test="name != null and name != ''">name = #{name, jdbcType=VARCHAR},</if>
+            <if test="phone != null and phone != ''">phone = #{phone, jdbcType=VARCHAR},</if>
+            <if test="email != null and email != ''">email = #{email, jdbcType=VARCHAR},</if>
+            <if test="birthdate != null and birthdate != ''">birthdate = #{birthdate, jdbcType=DATE},</if>
+            <if test="status != null and status != ''">status = #{status, jdbcType=VARCHAR},</if>
+            updt_dt = NOW()
+        </set>
+        WHERE member_id = #{memberId, jdbcType=INTEGER}
+    </update>
 
 
 

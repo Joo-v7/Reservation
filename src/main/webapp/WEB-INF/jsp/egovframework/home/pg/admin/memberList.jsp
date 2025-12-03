@@ -94,6 +94,7 @@
           <tr>
             <th class="text-center">연번</th>
             <th class="text-center">권한</th>
+            <th class="text-center">소셜 로그인</th>
             <th class="text-center">아이디</th>
             <th class="text-center">이름</th>
             <th class="text-center">휴대전화</th>
@@ -146,7 +147,7 @@
 
                 <div class="mb-3">
                   <label for="phone" class="form-label fw-bold">휴대전화 <span class="text-danger mb-3">*</span></label>
-                  <input id="phone" name="phone" class="form-control" placeholder="숫자만 입력하세요. ex) 01012345678" required></input>
+                  <input id="phone" name="phone" class="form-control" placeholder="숫자만 입력하세요. ex) 01012345678" required>
                 </div>
 
                 <div class="mb-3">
@@ -250,14 +251,17 @@ function dataList() {
         //   roleArr += roleMap[r];
         // })
         tableData += '<td class="text-center">' + values.role + '</td>';
+        // 소셜 로그인 여부
+        tableData += '<td class="text-center">' + values.isOauth + '</td>';
         // 아이디
-        tableData += '<td class="text-center">' + (values.role === '소셜 사용자' ? '소셜 사용자' : values.username) + '</td>';
+        let username = (values.isOauth === 'Y') ? values.oauthProvider + ' 로그인' : values.username;
+        tableData += '<td class="text-center">' + username + '</td>';
         // 이름
         tableData += '<td class="text-center">' + $.trim(values.name) + '</td>';
         // 휴대전화
         tableData += '<td class="text-center">' + values.phone + '</td>';
         // 이메일
-        tableData += '<td class="text-center">' + values.phone + '</td>';
+        tableData += '<td class="text-center">' + values.email + '</td>';
         // 생년월일
         tableData += '<td class="text-center">' + formatDate(values.birthdate) + '</td>';
         // 등록일
@@ -327,14 +331,50 @@ function event() {
 
   // 회원 저장 버튼 클릭
   // 모달 내 회원 관리 폼에서 저장 버튼 클릭
-  $('#managementBtn').on('click', function () {
+  $('#memberSaveBtn').on('click', function () {
+
     // === 제출 유효성 체크 ===
     let formErr = false;
     let moveFocus = '';
-    let errorMsg = '';
+    let errMsg = '';
+
+    // 이름
+    if(!formErr && !isValidName($('#name').val())) {
+      formErr = true;
+      moveFocus = 'name';
+      errMsg = '이름은 1~20자의 한글, 영어만 입력 가능합니다.'
+    }
+
+    // 전화번호
+    if(!formErr && !isValidPhone($('#phone').val())) {
+      formErr = true;
+      moveFocus = 'phone';
+      errMsg = '올바른 전화번호를 입력해주세요. ex) 010-1234-5678'
+    }
+
+    // 이메일
+    if(!formErr && !isValidEmail($('#email').val())) {
+      formErr = true;
+      moveFocus = 'email';
+      errMsg = '올바른 이메일 형식을 입력해주세요. ex) onroom@onroom.com'
+    }
+
+    // 생년월일
+    if (!formErr && !isValidBirthDate($('#birthdate').val())) {
+      formErr = true;
+      moveFocus = 'birthdate';
+      errMsg = '생년월일은 오늘 이후 날짜를 선택할 수 없습니다.';
+    }
+
+    // 권한
+    if (!formErr && $('input[name="roleIds"]:checked').length === 0) {
+      formErr = true;
+      moveFocus = 'role';
+      errMsg = '권한은 최소 1개 이상 선택해야 합니다.';
+    }
 
     if (formErr) {
-      alert(errorMsg);
+      alert(errMsg);
       if (moveFocus) {
         $('#' + moveFocus).focus();
       }
@@ -342,7 +382,7 @@ function event() {
     }
 
     // merge
-    ajaxForm('<c:url value="/admin/setMemberMerge.do"/>', $('#modalForm').serialize(), function (res) {
+    ajaxForm('<c:url value="/admin/setMemberUpdate.do"/>', $('#modalForm').serialize(), function (res) {
       if ($.trim(res.error) === 'N') {
         alert(res.successMsg);
 
@@ -351,8 +391,44 @@ function event() {
       }
     });
 
+  });
+
+  // 이름 입력 유효성
+  $('#name').on('input', function() {
+    const filtered = $(this).val().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣA-Za-z]/g, '');
+    $(this).val(filtered);
+  });
+
+  // 휴대전화 입력 유효성
+  $('#phone').on('input', function () {
+    $(this).val(normalizeDigits($(this).val()));
+  })
+  .on('blur', function () {
+    const val = formatKRPhone(normalizeDigits($(this).val()));
+    $(this).val(val);
+  });
+
+  // 이메일 입력 유효성 검사
+  $('#email').on('input', function() {
+    const val = $(this).val();
+    // 이메일에 허용되지 않는 문자 제거
+    const filtered = val.replace(/[^a-zA-Z0-9@._%+-]/g, '');
+    $(this).val(filtered);
+  });
+
+  // 생년월일 입력 유효성 검사
+  const today = new Date().toISOString().split('T')[0];
+
+  $('#birthdate').on('change', function () {
+    const val = $(this).val();
+
+    if (val && val > today) {
+      alert('생년월일은 오늘 이후 날짜를 선택할 수 없습니다.');
+      $(this).val('');
+    }
 
   });
+
 
 }
 
@@ -364,6 +440,19 @@ function formatDate(dataString) {
   const day = dateObj.getDate().toString().padStart(2, '0');
 
   return year + '-' + month + '-' + day;
+}
+
+// 날짜 + 시간(분:초)
+function formDateTime(dataString) {
+  const dateObj = new Date(dataString);
+
+  const year = dateObj.getFullYear();
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const hours = String(dateObj.getHours()).padStart(2, "0");
+  const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+
+  return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
 }
 
 function numberWithCommas(a) {
@@ -384,19 +473,22 @@ function memberModal(memberId) {
       const data = res.dataMap;
 
       $('#memberId').val(data.memberId);
-      $('#username').val(data.username);
       $('#name').val(data.name);
       $('#phone').val(data.phone);
       $('#email').val(data.email);
       $('#birthdate').val(formatDate(data.birthdate));
 
+      // 회원 아이디
+      let username = (data.isOauth === 'Y') ? data.oauthProvider + ' 로그인' : data.username;
+      $('#username').val(username);
+      $('#username').prop('readonly', true); // 아이디 수정 불가
+
       // 회원 상태
       let statusHtml = '';
       statusList.forEach(function (s) {
-        const selected = (s.code === data.status) ? ' selected' : '';
+        const selected = (s.name === data.status) ? ' selected' : '';
         statusHtml += '<option value="' + s.code + '"' + selected + '>' + s.name + '</option>';
       });
-
       $('#status').html(statusHtml);
 
       // 회원 권한
@@ -414,13 +506,7 @@ function memberModal(memberId) {
                 '</label>';
         roleHtml += '</div>';
       });
-
       $('#role').html(roleHtml);
-
-      // 회원 role에 3(소셜 사용자)가 있으면 이름을 '소셜 사용자'로 세팅
-      if (data.role.indexOf(3) !== -1) {
-        $('#username').val('소셜 사용자');
-      }
 
       let modalEl = document.getElementById('memberModal');
       let modal = new bootstrap.Modal(modalEl);
@@ -428,6 +514,58 @@ function memberModal(memberId) {
     }
   });
 
+}
+
+// 전화번호: 숫자만 남기기 & 11자리 제한
+function normalizeDigits(raw) {
+  let d = String(raw).replace(/\D/g, '');
+  return d.slice(0, 11);
+}
+
+// 전화번호 - 하이픈 자동 추가
+function formatKRPhone(d) {
+  if (!d) return '';
+  return d.slice(0,3) + '-' + d.slice(3, d.length-4) + '-' + d.slice(-4);
+}
+
+// 이름 (한글, 영어만)
+function isValidName(val) {
+  val = $.trim(val);
+  const regex = /^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z]{1,20}$/;
+  return regex.test(val);
+}
+
+// 이메일
+function isValidEmail(val) {
+  val = $.trim(val);
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
+  return regex.test(val);
+}
+
+// 생년월일
+function isValidBirthDate(val) {
+  const today = new Date().toISOString().split('T')[0];
+  val = $.trim(val);
+
+  const regex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+  if (!regex.test(val)) return false;
+
+  if (val > today) return false;
+
+  return true;
+}
+
+// 전화번호
+function isValidPhone(val) {
+  val = $.trim(val);
+
+  let digits = val.replace(/\D/g, '');
+
+  if (digits.length !== 11) return false;
+
+  if (!digits.startsWith("010")) return false;
+
+  return true;
 }
 
 </script>

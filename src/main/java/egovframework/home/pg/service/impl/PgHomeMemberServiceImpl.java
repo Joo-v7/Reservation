@@ -108,6 +108,9 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
 
     /**
      * 회원가입
+     * @param param
+     * @return 회원가입 결과 boolean
+     * @throws Exception
      */
     @Transactional
     @Override
@@ -131,7 +134,7 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
             List<Integer> roleList = new ArrayList<>();
             if (StringUtils.isEmpty(roleId)) {
                 // 일반 회원 ROLE 하드 코딩
-                roleList.add(2); // 1: ROLE_ADMIN, 2:ROLE_USER, 3: ROLE_OAUTH
+                roleList.add(2); // 1: ROLE_ADMIN, 2:ROLE_USER
                 param.put("roleIds", roleList);
             } else {
                 roleList.add(Integer.parseInt(roleId));
@@ -181,5 +184,28 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
         pgHomeMemberMapper.setUpdateLastLoginAtByUsername(username);
     }
 
+    /**
+     * 회원 - 회원 정보 업데이트
+     * @param param
+     * @return 회원 정보 업데이트 결과 boolean
+     * @throws DataAccessException
+     */
+    @Transactional
+    @Override
+    public boolean setMemberUpdate(HashMap<String, Object> param) throws Exception {
+        boolean result = false;
 
+        // phone, email AES256 암호화
+        String encryptedPhone = AES256Util.encrypt((String)param.get("phone"));
+        String encryptedEmail = AES256Util.encrypt((String)param.get("email"));
+
+        param.put("phone", encryptedPhone);
+        param.put("email", encryptedEmail);
+
+        if (pgHomeMemberMapper.setMemberUpdate(param) > 0) {
+            result = true;
+        }
+
+        return result;
+    }
 }

@@ -11,6 +11,11 @@ import java.util.List;
 public interface PgHomeMemberRoleMapper {
 
     /**
+     * ROLE 전체 조회
+     */
+    List<EgovMap> getRoleList() throws DataAccessException;
+
+    /**
      * MEMBER_ROLE insert
      */
     int setMemberRoleInsert(HashMap<String, Object> param) throws DataAccessException;
@@ -18,11 +23,6 @@ public interface PgHomeMemberRoleMapper {
     /**
      * MEMBER_ROLE delete
      */
-    int setMemberRoleAllDelete(HashMap<String, Object> param) throws DataAccessException;
-
-    /**
-     * ROLE 전체 조회
-     */
-    List<EgovMap> getRoleList() throws DataAccessException;
+    int setMemberRoleAllDeleteByMemberId(Long memberId) throws DataAccessException;
 
 }

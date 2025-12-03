@@ -58,9 +58,9 @@
             <dl class="row mb-3">
               <dt class="col-sm-2 col-form-label">이름 <span class="text-danger">*</span></dt>
               <dd class="col-sm-7">
-                <input id="name" name="name" type="text" class="form-control" placeholder="한글만 입력 가능합니다." maxlength="20" required>
+                <input id="name" name="name" type="text" class="form-control" placeholder="한글, 영어만 입력 가능합니다." maxlength="20" required>
                 <div class="valid-feedback"></div>
-                <div class="invalid-feedback">한글만 입력가능합니다.</div>
+                <div class="invalid-feedback">한글, 영어만 입력가능합니다.</div>
               </dd>
             </dl>
 
@@ -160,7 +160,7 @@ function submitJoinForm() {
   if(!formErr && !isValidName($('#name').val())) {
     formErr = true;
     moveFocus = 'name';
-    errMsg = '이름은 1~20자의 한글만 입력 가능합니다.'
+    errMsg = '이름은 1~20자의 한글, 영어만 입력 가능합니다.'
   }
 
   // 전화번호
@@ -266,12 +266,12 @@ function bindEvents() {
     }
   });
 
-  // 이름 (한글만)
+  // 이름 (한글, 영어만)
   $('#name').on('input', function() {
-    const filtered = $(this).val().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣ]/g, '');
+    const filtered = $(this).val().replace(/[^가-힣ㄱ-ㅎㅏ-ㅣA-Za-z]/g, '');
     $(this).val(filtered);
 
-    if (/^[가-힣ㄱ-ㅎㅏ-ㅣ]{1,20}$/.test(filtered)) {
+    if (/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z]{1,20}$/.test(filtered)) {
       $(this).removeClass('is-invalid').addClass('is-valid');
     } else {
       $(this).removeClass('is-valid').addClass('is-invalid');
@@ -340,10 +340,10 @@ function isValidPassword(val) {
   return regex.test(val);
 }
 
-// 이름 (한글만)
+// 이름 (한글, 영어만)
 function isValidName(val) {
   val = $.trim(val);
-  const regex = /^[가-힣ㄱ-ㅎㅏ-ㅣ]{1,20}$/;
+  const regex = /^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z]{1,20}$/;
   return regex.test(val);
 }
 

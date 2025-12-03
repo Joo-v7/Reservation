@@ -2,6 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="egovframework.home.pg.service.impl.PgHomeMemberRoleMapper">
 
+    <!-- ROLE - 전체 조회 -->
+    <select id="getRoleList" resultType="egovMap">
+        SELECT
+            role_id,
+            name,
+            description
+        FROM ROLE
+    </select>
+
     <!-- MEMBER_ROLE - 등록 -->
     <insert id="setMemberRoleInsert" parameterType="hashMap">
         INSERT INTO MEMBER_ROLE (
@@ -15,17 +24,9 @@
 
 
     <!-- MERGE_ROLE - ROLES 전체 삭제 -->
-    <delete id="setMemberRoleAllDelete" parameterType="long">
+    <delete id="setMemberRoleAllDeleteByMemberId" parameterType="long">
         DELETE FROM MEMBER_ROLE WHERE member_id = #{memberId}
     </delete>
 
-    <!-- ROLE - 전체 조회 -->
-    <select id="getRoleList" resultType="egovMap">
-        SELECT
-            role_id,
-            name,
-            description
-        FROM ROLE
-    </select>
 
 </mapper>

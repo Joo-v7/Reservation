@@ -194,8 +194,55 @@ public class PgHomeMemberAdminController {
      */
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/setMemberUpdate.do")
-    public ResponseEntity<?> setMemberUpdate(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+    public ResponseEntity<?> setMemberUpdate(
+            HttpServletRequest req,
+            HttpServletResponse res,
+            ModelMap model,
+            @RequestParam HashMap<String, Object> param,
+            @RequestParam(value = "roleIds", required = false) Long[] roleIds
+    ) throws Exception {
         HashMap<String, Object> retMap = new HashMap<>();
+        boolean result = true;
+
+        try {
+            // 회원 정보 업데이트
+            if (!pgHomeMemberService.setMemberUpdate(param)) {
+                result = false;
+            }
+
+            // 회원 기존 권한 삭제
+            String memberId = StringUtils.stripToEmpty((String) param.get("memberId"));
+            if (!pgHomeMemberRoleService.setMemberRoleAllDeleteByMemberId(Long.parseLong(memberId))) {
+                result = false;
+            }
+
+            // 회원 권한 등록
+            param.put("roleIds", roleIds);
+            if (!pgHomeMemberRoleService.setMemberRoleInsert(param)){
+                result = false;
+            }
+
+            if (result) {
+                retMap.put("error", "N");
+                retMap.put("successTitle", "Success");
+                retMap.put("successMsg", "성공적으로 저장되었습니다.");
+            } else {
+                retMap.put("error", "Y");
+                retMap.put("errorTitle", "회원 정보 업데이트");
+                retMap.put("errorMsg", "데이터 처리 중 오류가 발생했습니다.");
+            }
+
+
+        } catch (DataAccessException | MultipartException | NullPointerException | IllegalArgumentException e) {
+            log.error("== ADMIN == PgHomeMemberAdminController:setMemberUpdate.do error={}", e.getMessage());
+            throw e;
+        }
+
+
+
+
+
+        // TODO MEMBER ROLE 업데이트
 
 
 

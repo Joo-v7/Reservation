@@ -46,5 +46,10 @@ public interface PgHomeMemberService {
      * 회원 - 최근 로그인 여부 업데이트
      */
     void setUpdateLastLoginAtByUsername(String username) throws DataAccessException;
+
+    /**
+     * 회원 - 회원 정보 업데이트
+     */
+    boolean setMemberUpdate(HashMap<String, Object> param) throws Exception;
 }
 

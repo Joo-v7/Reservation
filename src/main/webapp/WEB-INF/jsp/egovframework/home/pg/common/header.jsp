@@ -42,7 +42,8 @@
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <c:choose>
                     <c:when test="${isLogin}">
-                        <li class="nav-item"><a class="nav-link active" href="<c:url value='/myPage/myInfoList.do'/>"><strong>${name}</strong> 님</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="<c:url value='/myPage/myInfoList.do'/>">
+                            <strong style="text-decoration: underline; text-decoration-color: white; text-underline-offset: 3px;">${name}</strong> 님</a></li>
                         <li class="nav-item"><a class="nav-link active" href="<c:url value='/logout.do'/>">로그아웃</a></li>
                     </c:when>
                     <c:otherwise>

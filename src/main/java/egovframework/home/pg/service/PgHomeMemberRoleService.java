@@ -8,17 +8,18 @@ import java.util.List;
 
 public interface PgHomeMemberRoleService {
     /**
+     * ROLE 전체 조회
+     */
+    List<EgovMap> getRoleList() throws DataAccessException;
+
+    /**
      * MEMBER_ROLE insert
      */
-    int setMemberRoleInsert(HashMap<String, Object> param) throws DataAccessException;
+    boolean setMemberRoleInsert(HashMap<String, Object> param) throws DataAccessException;
 
     /**
      * MEMBER_ROLE delete
      */
-    int setMemberRoleAllDelete(HashMap<String, Object> param) throws DataAccessException;
+    boolean setMemberRoleAllDeleteByMemberId(Long memberId) throws DataAccessException;
 
-    /**
-     * ROLE 전체 조회
-     */
-    List<EgovMap> getRoleList() throws DataAccessException;
 }

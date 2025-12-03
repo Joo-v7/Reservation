@@ -49,4 +49,9 @@ public interface PgHomeMemberMapper {
      */
     int setUpdateLastLoginAtByUsername(String username) throws DataAccessException;
 
+    /**
+     * 회원 - 회원 정보 업데이트
+     */
+    int setMemberUpdate(HashMap<String, Object> param) throws DataAccessException;
+
 }
