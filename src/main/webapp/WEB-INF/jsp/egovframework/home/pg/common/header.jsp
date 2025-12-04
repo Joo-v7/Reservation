@@ -25,7 +25,7 @@
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="<c:url value='/css/styles.css'/>" rel="stylesheet"/>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <!-- Responsive navbar-->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-4">
     <div class="container">
