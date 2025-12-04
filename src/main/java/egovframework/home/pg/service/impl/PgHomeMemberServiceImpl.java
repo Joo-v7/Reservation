@@ -2,6 +2,7 @@ package egovframework.home.pg.service.impl;
 
 import egovframework.home.pg.common.code.MemberStatus;
 import egovframework.home.pg.common.utils.AES256Util;
+import egovframework.home.pg.exception.ArgumentNotValidException;
 import egovframework.home.pg.service.PgHomeMemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +11,11 @@ import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.egovframe.rte.psl.dataaccess.util.EgovMap;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
 
     private final PgHomeMemberMapper pgHomeMemberMapper;
     private final PgHomeMemberRoleMapper pgHomeMemberRoleMapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 회원 - 총 개수
@@ -214,5 +216,40 @@ public class PgHomeMemberServiceImpl extends EgovAbstractServiceImpl implements 
         }
 
         return result;
+    }
+
+    /**
+     * 회원 - 비밀번호 변경
+     * @param param
+     * @return 비밀번호 변경 결과 여부
+     * @throws Exception
+     */
+    @Transactional
+    @Override
+    public boolean setPasswordUpdate(HashMap<String, Object> param) throws Exception {
+        boolean result = false;
+
+        Long memberId = (Long)param.get("memberId");
+        String oldPassword = StringUtils.stripToEmpty((String)param.get("oldPassword"));
+        String newPassword = StringUtils.stripToEmpty((String)param.get("newPassword"));
+
+        // 회원 조회
+        EgovMap memberMap = pgHomeMemberMapper.getMemberById(memberId);
+
+        // 회원이 입력한 기존 비밀번호가 실제 비밀번호와 일치하는지 확인
+        if (!passwordEncoder.matches(oldPassword, (String) memberMap.get("password"))) {
+            throw new ArgumentNotValidException("기존 비밀번호가 올바르지 않습니다.");
+        }
+
+        // 비밀번호 암호화 후 저장
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        param.put("password", encodedPassword);
+
+        if (pgHomeMemberMapper.setMemberUpdate(param) > 0) {
+            return true;
+        }
+
+        return result;
+
     }
 }

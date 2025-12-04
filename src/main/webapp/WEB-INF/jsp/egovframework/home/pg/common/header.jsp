@@ -64,6 +64,7 @@
     </div>
 </header>
 
+<!-- 에러 처리 -->
 <c:if test="${not empty sessionScope.errorMsg}">
 <script>
     alert('${sessionScope.errorMsg}');

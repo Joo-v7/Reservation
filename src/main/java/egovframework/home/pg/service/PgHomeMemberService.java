@@ -51,5 +51,10 @@ public interface PgHomeMemberService {
      * 회원 - 회원 정보 업데이트
      */
     boolean setMemberUpdate(HashMap<String, Object> param) throws Exception;
+
+    /**
+     * 회원 - 비밀번호 변경
+     */
+    boolean setPasswordUpdate(HashMap<String, Object> param) throws Exception;
 }
 

@@ -1,5 +1,6 @@
 package egovframework.home.pg.common.advice;
 
+import egovframework.home.pg.exception.AccessDeniedException;
 import egovframework.home.pg.exception.ArgumentNotValidException;
 import egovframework.home.pg.exception.ConflictException;
 import org.springframework.dao.DataAccessException;
@@ -124,6 +125,21 @@ public class GlobalExceptionHandler {
         retMap.put("errorTitle", "Argument Not Valid");
         retMap.put("errorMsg", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(retMap);
+    }
+
+    /**
+     * AccessDeniedException
+     * OAuth 이용자 접근 예외 처리
+     * @param e
+     * @return 에러 응답 map
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e) {
+        HashMap<String, Object> retMap = new HashMap<>();
+        retMap.put("error", "Y");
+        retMap.put("errorTitle", "Access Denied");
+        retMap.put("errorMsg", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(retMap);
     }
 
 

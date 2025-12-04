@@ -82,7 +82,7 @@
                 내 정보
               </a>
 
-              <a href="#"
+              <a href="<c:url value='/myPage/passwordUpdate.do'/>"
                  class="list-group-item list-group-item-action">
                 비밀번호 변경
               </a>

@@ -2,6 +2,8 @@ package egovframework.home.pg.web;
 
 import egovframework.home.pg.common.code.ReservationStatus;
 import egovframework.home.pg.common.security.user.PrincipalDetails;
+import egovframework.home.pg.exception.AccessDeniedException;
+import egovframework.home.pg.exception.ArgumentNotValidException;
 import egovframework.home.pg.service.PgHomeMemberService;
 import egovframework.home.pg.service.PgHomeReservationService;
 import lombok.RequiredArgsConstructor;
@@ -108,7 +110,7 @@ public class PgHomeMemberController {
     }
 
     /**
-     * 마이페이지 - 회원정보 - 내 정보 페이지
+     * 마이페이지 - 계정 - 내 정보 페이지
      * @param req
      * @param res
      * @param model
@@ -123,7 +125,7 @@ public class PgHomeMemberController {
     }
 
     /**
-     * 마이페이지 - 회원정보 - 내 정보 데이터
+     * 마이페이지 - 계정 - 내 정보 데이터
      * @param req
      * @param res
      * @param model
@@ -155,7 +157,7 @@ public class PgHomeMemberController {
     }
 
     /**
-     * 마이페이지 - 회원 - 내 정보 수정 결과
+     * 마이페이지 - 계정 - 내 정보 수정
      * @param req
      * @param res
      * @param model
@@ -192,6 +194,120 @@ public class PgHomeMemberController {
         return ResponseEntity.status(HttpStatus.OK).body(retMap);
     }
 
+    /**
+     * 마이페이지 - 계정 - 비밀번호 변경 페이지
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 비밀번호 변경 페이지
+     * @throws Exception
+     */
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/passwordUpdate.do")
+    public String passwordUpdate(
+            HttpServletRequest req,
+            HttpServletResponse res,
+            ModelMap model,
+            @RequestParam HashMap<String, Object> param,
+            Authentication authentication
+    ) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+        Long memberId = principalDetails.getId();
+        param.put("memberId", memberId);
+
+        EgovMap memberMap = pgHomeMemberService.getMemberById(memberId);
+
+        String isOauth = StringUtils.stripToEmpty((String) memberMap.get("isOauth"));
+
+        // oauth 사용자는 비밀번호 변경 페이지 접근 불가
+        if (isOauth.equals("Y")) {
+            String errorMsg = "접근 권한이 없습니다.";
+            req.getSession().setAttribute("errorMsg", errorMsg);
+            return "redirect:/";
+        }
+
+        return "home/pg/passwordUpdate";
+    }
+
+    /**
+     * 마이페이지 - 계정 - 비밀번호 변경 요청
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 비밀번호 변경 결과 여부
+     * @throws Exception
+     */
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/setPasswordUpdate.do")
+    public ResponseEntity<?> setPasswordUpdate(
+            HttpServletRequest req,
+            HttpServletResponse res,
+            ModelMap model,
+            @RequestParam HashMap<String, Object> param,
+            Authentication authentication
+    ) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
+
+        try {
+            PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+            Long memberId = principalDetails.getId();
+            param.put("memberId", memberId);
+
+            if (pgHomeMemberService.setPasswordUpdate(param)) {
+                retMap.put("error", "N");
+                retMap.put("successTitle", "Success");
+                retMap.put("successMsg", "비밀번호가 변경되었습니다. 다시 로그인 하세요.");
+            } else {
+                retMap.put("error", "Y");
+                retMap.put("errorTitle", "회원 비밀번호 변경");
+                retMap.put("errorMsg", "데이터 처리 중 오류가 발생했습니다.");
+            }
+
+        } catch (DataAccessException | MultipartException | NullPointerException | IllegalArgumentException | ArgumentNotValidException e) {
+            log.error("PgHomeMemberController:setPasswordUpdate.do error={}", e.getMessage());
+            throw e;
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
+
+    /**
+     * 마이페이지 - 계정 - 회원탈퇴 페이지
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return 회원탈퇴 페이지
+     * @throws Exception
+     */
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/leave.do")
+    public String leave(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        // TODO 마이페이지 - 계정 - 회원탈퇴 페이지
+        return "home/pg/leave";
+    }
+
+    /**
+     * 마이페이지 - 계정 - 회원탈퇴 결과
+     * @param req
+     * @param res
+     * @param model
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    @PreAuthorize("isAuthenticated()")
+    @RequestMapping("/myPage/setLeave.do")
+    public ResponseEntity<?> setLeave(HttpServletRequest req, HttpServletResponse res, ModelMap model, @RequestParam HashMap<String, Object> param) throws Exception {
+        HashMap<String, Object> retMap = new HashMap<>();
+
+        // TODO 마이페이지 - 계정 - 회원탈퇴 결과
+
+        return ResponseEntity.status(HttpStatus.OK).body(retMap);
+    }
 
     /**
      * 마이페이지 - 예약 - 내 예약 페이지

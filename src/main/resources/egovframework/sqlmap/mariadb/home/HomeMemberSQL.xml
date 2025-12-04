@@ -180,6 +180,7 @@
     <update id="setMemberUpdate" parameterType="hashMap">
         UPDATE MEMBER
         <set>
+            <if test="password != null and password != ''">password = #{password, jdbcType=VARCHAR},</if>
             <if test="name != null and name != ''">name = #{name, jdbcType=VARCHAR},</if>
             <if test="phone != null and phone != ''">phone = #{phone, jdbcType=VARCHAR},</if>
             <if test="email != null and email != ''">email = #{email, jdbcType=VARCHAR},</if>
